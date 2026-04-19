@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASTM D6913 Double Separation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Segoe UI,Tahoma,Arial,sans-serif;background:#f0f2f5;color:#222;font-size:13px}
+header{background:linear-gradient(135deg,#4a1a8a,#7b3db5);color:#fff;padding:14px 20px;text-align:center;box-shadow:0 3px 8px rgba(0,0,0,.28)}
+header h1{font-size:15px;font-weight:700}header p{font-size:11px;opacity:.9;margin-top:4px}
+.container{max-width:1200px;margin:16px auto;padding:0 12px}
+.card{background:#fff;border-radius:8px;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,.1);overflow:hidden}
+.card-header{padding:10px 14px;font-weight:700;font-size:13px;color:#fff}
+.bg-purple{background:#5B2D8E}.bg-green{background:#1F6B3A}.bg-blue{background:#1A3A6B}.bg-orange{background:#8B4500}
+.card-body{padding:14px}
+.params-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.param-box{border-radius:6px;padding:8px 10px;text-align:center}
+.param-box label{display:block;font-size:10px;color:#555;margin-bottom:4px;font-weight:700}
+.param-box input,.param-box .calc-val{width:100%;border:1.5px solid #ccc;border-radius:4px;padding:5px;text-align:center;font-size:13px;font-weight:700}
+.param-box input:focus{outline:none;border-color:#7b3db5}
+.input-yellow{background:#fffde7}.input-green{background:#e8f5e9}.input-blue{background:#e3f2fd}
+.calc-val{background:#e8f5e9;color:#1F6B3A;border-color:#81c784;border:1.5px solid #81c784;border-radius:4px;padding:5px;display:block}
+.cscf-bar{display:flex;gap:16px;background:#f3e5ff;border-radius:6px;padding:10px 14px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.cscf-item{text-align:center}.cscf-item span{display:block;font-size:10px;color:#666}.cscf-item strong{font-size:16px;color:#5B2D8E}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#e8d5f5;padding:7px 8px;text-align:center;border:1px solid #ccc;font-weight:700;font-size:11px}
+td{padding:6px 8px;border:1px solid #ddd;text-align:center}
+tr:nth-child(even) td{background:#fafafa}
+.td-input{background:#fffde7!important}
+td input[type=number]{width:92px;border:1.5px solid #bbb;border-radius:4px;padding:3px 5px;text-align:center;font-size:12px;background:#fffde7}
+td input[type=number]:focus{outline:none;border-color:#5B2D8E}
+.td-calc{background:#e3f2fd!important;font-weight:700;color:#1A3A6B}
+.td-pass{background:#e8f5e9!important;font-weight:700;color:#1F6B3A}
+.td-sep{background:#f3e5ff!important;font-weight:700;color:#5B2D8E}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn-calc,.btn-reset,.btn-save,.btn-session-save,.btn-session-load{border:none;border-radius:6px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.btn-calc{background:linear-gradient(135deg,#4a1a8a,#7b3db5);color:#fff;padding:10px 28px;font-size:14px;font-weight:700}
+.btn-reset{background:#e0e0e0;color:#444;padding:10px 18px;font-size:13px}
+.btn-save{background:linear-gradient(135deg,#1F6B3A,#2E8B57);color:#fff;padding:10px 22px;font-size:14px;font-weight:700}
+.btn-save:disabled{background:#aaa;cursor:not-allowed;box-shadow:none}
+.btn-session-save{background:linear-gradient(135deg,#1A3A6B,#2E5FA3);color:#fff;padding:10px 20px;font-size:13px;font-weight:700}
+.btn-session-load{background:linear-gradient(135deg,#8B4500,#c46200);color:#fff;padding:10px 20px;font-size:13px;font-weight:700}
+.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:14px 0}
+#status{text-align:center;padding:8px;border-radius:6px;font-weight:700;display:none;margin-bottom:10px}
+.status-ok{background:#e8f5e9;color:#1F6B3A;display:block!important}
+.status-err{background:#ffebee;color:#c62828;display:block!important}
+#fileInput{display:none}
+.guide-btn{margin-top:8px;background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.5);padding:6px 18px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700}
+.tab-nav{display:flex;gap:8px;flex-wrap:wrap;padding:14px}
+.gtab{background:#e8d5f5;border:none;padding:8px 18px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;color:#5B2D8E;transition:.2s}
+.gtab.active,.gtab:hover{background:#5B2D8E;color:#fff}
+.main-tab-section{display:none}.main-tab-section.active{display:block}
+.inner-gtab{background:#e8d5f5;border:none;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;color:#5B2D8E;transition:.2s}
+.inner-gtab.active,.inner-gtab:hover{background:#5B2D8E;color:#fff}
+.gtab-content{animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;justify-content:center;align-items:flex-start;overflow-y:auto;padding:20px}
+.modal-box{background:#fff;border-radius:10px;max-width:900px;width:100%;margin:auto;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.modal-head{background:linear-gradient(135deg,#4a1a8a,#7b3db5);color:#fff;padding:16px 20px;border-radius:10px 10px 0 0;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:rgba(255,255,255,.2);color:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;line-height:1}
+.modal-body{padding:20px;font-size:13px;line-height:1.8;color:#222;max-height:80vh;overflow-y:auto}
+.seg{border-radius:8px;padding:14px;margin-bottom:14px}
+
+/* Classification badge */
+.class-badge{display:inline-block;background:#5B2D8E;color:#fff;font-size:22px;font-weight:900;padding:8px 22px;border-radius:10px;letter-spacing:1px;margin-bottom:8px}
+.class-name{font-size:13px;font-weight:700;color:#1F6B3A;margin-bottom:4px}
+.class-detail{font-size:11px;color:#555;line-height:1.7}
+.class-empty{color:#aaa;font-size:13px}
+
+/* Project tab specific */
+.project-section-title{font-size:13px;font-weight:700;color:#4a1a8a;border-right:4px solid #5B2D8E;padding:6px 10px;margin-bottom:12px;background:#f3e5ff;border-radius:0 6px 6px 0}
+
+@media(max-width:900px){.params-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
+</style>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>🔬 ASTM D6913-17 | Composite Sieving – Double Separation | فصل مركب بفصلين</h1>
+  <p>Method A — يحسب 1stCSCF و 2ndCSCF والنتائج المجمعة تلقائياً</p>
+  <button class="guide-btn" onclick="document.getElementById('guideModal').style.display='flex'">📖 دليل الاستخدام والحسابات</button>
+</header>
+
+<div class="container">
+
+  <!-- ═══ MAIN TAB NAV ═══ -->
+  <div class="card">
+    <div class="tab-nav">
+      <button id="btn_project" class="gtab active" onclick="switchMainTab('project')">📁 بيانات المشروع</button>
+      <button id="btn_test"    class="gtab"        onclick="switchMainTab('test')">🧪 بيانات الاختبار</button>
+      <button id="btn_report"  class="gtab"        onclick="switchMainTab('report')">🖨️ التقرير</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TAB 1 — بيانات المشروع
+  ═══════════════════════════════════════════ -->
+  <div id="tab_project" class="main-tab-section active">
+
+    <div class="card">
+      <div class="card-header bg-green">📋 بيانات المشروع / Project Information</div>
+      <div class="card-body">
+        <p class="project-section-title">🏗️ معلومات العميل والمشروع</p>
+        <div class="params-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:18px">
+          <div class="param-box input-yellow"><label>اسم العميل / Client</label><input type="text" id="clientName" placeholder="أدخل اسم العميل" oninput="syncReport()"></div>
+          <div class="param-box input-yellow"><label>اسم المشروع / Project</label><input type="text" id="projectName" placeholder="أدخل اسم المشروع" oninput="syncReport()"></div>
+          <div class="param-box input-yellow"><label>الموقع / Location</label><input type="text" id="siteLocation" placeholder="أدخل الموقع" oninput="syncReport()"></div>
+          <div class="param-box input-yellow"><label>رقم العينة / Sample No.</label><input type="text" id="sampleNo" placeholder="مثال: S-01" oninput="syncReport()"></div>
+        </div>
+
+        <p class="project-section-title">📅 التواريخ والفني</p>
+        <div class="params-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:18px">
+          <div class="param-box input-yellow"><label>تاريخ استلام العينة / Received</label><input type="date" id="sampleDate" oninput="syncReport()"></div>
+          <div class="param-box input-yellow"><label>تاريخ الاختبار / Test Date</label><input type="date" id="testDate" oninput="syncReport()"></div>
+          <div class="param-box input-yellow"><label>اسم الفني / Technician</label><input type="text" id="technicianName" placeholder="اسم الفني" oninput="syncReport()"></div>
+          <div class="param-box input-yellow"><label>الظروف البيئية / Environment</label><input type="text" id="envConditions" placeholder="مثال: 25°C / 60% RH" oninput="syncReport()"></div>
+        </div>
+
+        <p class="project-section-title">🔬 تفاصيل الاختبار</p>
+        <div class="params-grid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="param-box input-blue"><label>طريقة الاختبار / Test Method</label><input type="text" id="methodUsed" value="ASTM D6913-17" oninput="syncReport()"></div>
+          <div class="param-box input-blue"><label>نوع النخل / Sieving Type</label><input type="text" id="sieveType" value="Composite Sieving – Double Separation" oninput="syncReport()"></div>
+        </div>
+
+        <div style="margin-top:16px;background:#e8f5e9;border-radius:8px;padding:12px;font-size:12px;color:#1F6B3A">
+          <b>ملاحظة ISO 17025:</b> بيانات العميل واسم المشروع تظهر فقط في تبويب التقرير النهائي. صفحة الاختبار لا تحتوي معلومات تعريف العميل.
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- END TAB 1 -->
+
+
+  <!-- ═══════════════════════════════════════════
+       TAB 2 — بيانات الاختبار
+  ═══════════════════════════════════════════ -->
+  <div id="tab_test" class="main-tab-section">
+
+    <!-- Input Parameters -->
+    <div class="card">
+      <div class="card-header bg-purple">📋 البيانات المدخلة / Input Parameters</div>
+      <div class="card-body">
+        <div class="params-grid">
+          <div class="param-box input-yellow"><label>Sep.1 — منخل الفصل الأول (mm)</label><input type="number" id="sep1" value="9.5" step="0.1" onchange="calculate()"></div>
+          <div class="param-box input-yellow"><label>Sep.2 — منخل الفصل الثاني (mm)</label><input type="number" id="sep2" value="19" step="0.1" onchange="calculate()"></div>
+          <div class="param-box input-yellow"><label>wfp (%) — محتوى الرطوبة</label><input type="number" id="wfp" value="2" step="0.1" onchange="calculate()"></div>
+          <div class="param-box input-yellow"><label>FP,Mm (جم) — وزن الجزء الناعم الرطب</label><input type="number" id="fpmm" value="9999" onchange="calculate()"></div>
+          <div class="param-box input-yellow"><label>1stCP,Md (جم) — وزن الجزء الخشن الأول الجاف</label><input type="number" id="cp1md" value="1000" onchange="calculate()"></div>
+          <div class="param-box input-green"><label>FP,Md (جم) — محسوب</label><div class="calc-val" id="fpmd_disp">—</div></div>
+          <div class="param-box input-green"><label>S,Md (جم) — المجموع الكلي الجاف</label><div class="calc-val" id="smd_disp">—</div></div>
+          <div class="param-box input-blue"><label>1stSubS,Md (جم)</label><input type="number" id="subs1md" value="1500" onchange="calculate()"></div>
+          <div class="param-box input-blue"><label>2ndSubS,Md (جم)</label><input type="number" id="subs2md" value="500" onchange="calculate()"></div>
+        </div>
+        <div class="cscf-bar">
+          <div class="cscf-item"><span>1stCSCF</span><strong id="cscf1_val">—</strong></div>
+          <div style="font-size:20px;color:#aaa">→</div>
+          <div class="cscf-item"><span>2ndCSCF</span><strong id="cscf2_val">—</strong></div>
+          <div style="font-size:20px;color:#aaa">→</div>
+          <div class="cscf-item"><span>CF_FP2</span><strong id="cffp2_val">—</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sieve Tables -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header bg-green">🪨 1stCP — الجزء الخشن الأول (&gt; Sep.2 = 19mm)</div>
+        <div class="card-body">
+          <table><thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>محجوز تراكمي (جم)</th><th>% مار</th></tr></thead><tbody>
+            <tr><td>3"</td><td>75.0</td><td class="td-input"><input type="number" id="cp_75" value="0" onchange="calculate()"></td><td id="p_cp_75">—</td></tr>
+            <tr><td>2½"</td><td>63.0</td><td class="td-input"><input type="number" id="cp_63" value="0" onchange="calculate()"></td><td id="p_cp_63">—</td></tr>
+            <tr><td>2"</td><td>50.0</td><td class="td-input"><input type="number" id="cp_50" value="0" onchange="calculate()"></td><td id="p_cp_50">—</td></tr>
+            <tr><td>1½"</td><td>37.5</td><td class="td-input"><input type="number" id="cp_375" value="0" onchange="calculate()"></td><td id="p_cp_375">—</td></tr>
+            <tr><td>1"</td><td>25.0</td><td class="td-input"><input type="number" id="cp_25" value="500" onchange="calculate()"></td><td id="p_cp_25">—</td></tr>
+            <tr style="background:#f3e5ff"><td><b>¾" (Sep.2)</b></td><td><b>19.0</b></td><td class="td-input"><input type="number" id="cp_19" value="1000" onchange="calculate()"></td><td id="p_cp_19">—</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header bg-blue">🔵 1stSubS — العينة الفرعية الأولى (9.5mm ↔ 19mm)</div>
+        <div class="card-body">
+          <table><thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>محجوز تراكمي (جم)</th><th>% مار</th></tr></thead><tbody>
+            <tr><td>¾"</td><td>19.0</td><td class="td-input"><input type="number" id="ss1_19" value="0" onchange="calculate()"></td><td id="p_ss1_19">—</td></tr>
+            <tr style="background:#f3e5ff"><td><b>⅜" (Sep.1)</b></td><td><b>9.5</b></td><td class="td-input"><input type="number" id="ss1_95" value="500" onchange="calculate()"></td><td id="p_ss1_95">—</td></tr>
+          </tbody></table>
+          <div style="margin-top:10px;background:#fff3e0;border-radius:6px;padding:8px;font-size:11px;color:#8B4500"><b>ملاحظة:</b> لو ظهر فقد غسيل أو محجوز على أول منخل في أي set، لازم تراجع شرط 0.5% و 2% حسب المواصفة.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2ndSubS -->
+    <div class="card">
+      <div class="card-header bg-purple">🔬 2ndSubS — الجزء الناعم (&lt; Sep.1 = 9.5mm)</div>
+      <div class="card-body">
+        <div class="two-col">
+          <table><thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>FCMR (جم)</th><th>% مار جزئي</th></tr></thead><tbody>
+            <tr><td>⅜"</td><td>9.5</td><td class="td-input"><input type="number" id="ss2_95" value="0" onchange="calculate()"></td><td id="fp_95">—</td></tr>
+            <tr><td>No.4</td><td>4.75</td><td class="td-input"><input type="number" id="ss2_475" value="155" onchange="calculate()"></td><td id="fp_475">—</td></tr>
+            <tr><td>No.10</td><td>2.00</td><td class="td-input"><input type="number" id="ss2_2" value="252" onchange="calculate()"></td><td id="fp_2">—</td></tr>
+            <tr><td>No.40</td><td>0.425</td><td class="td-input"><input type="number" id="ss2_0425" value="352" onchange="calculate()"></td><td id="fp_0425">—</td></tr>
+            <tr><td>No.100</td><td>0.150</td><td class="td-input"><input type="number" id="ss2_015" value="385" onchange="calculate()"></td><td id="fp_015">—</td></tr>
+            <tr><td>No.200</td><td>0.075</td><td class="td-input"><input type="number" id="ss2_0075" value="415" onchange="calculate()"></td><td id="fp_0075">—</td></tr>
+          </tbody></table>
+          <div style="background:#f3e5ff;border-radius:6px;padding:12px;font-size:12px">
+            <p style="font-weight:700;color:#5B2D8E;margin-bottom:8px">📐 المعادلات</p>
+            <p><b>% مار جزئي</b> = (1 − FCMR / 2ndSubS,Md) × 100</p><br>
+            <p><b>% مار مجمع</b> = 2ndCSCF × (1 − FCMR / 2ndSubS,Md)</p><br>
+            <p style="color:#8B4500"><b>2ndCSCF</b> = 1stCSCF × (1 − FCMR@Sep.1 / 1stSubS,Md)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn-reset" onclick="resetForm()">🔄 إعادة تعيين</button>
+      <button class="btn-calc" onclick="calculate()">⚙️ احسب النتائج</button>
+      <button class="btn-save" onclick="saveResults()" id="btnSave" disabled>📄 تحميل تقرير HTML</button>
+      <button class="btn-session-save" onclick="saveSession()">💾 حفظ البيانات (JSON)</button>
+      <button class="btn-session-load" onclick="document.getElementById('fileInput').click()">📂 استيراد بيانات محفوظة</button>
+      <input type="file" id="fileInput" accept=".json" onchange="loadSession(event)">
+    </div>
+    <div id="status"></div>
+
+    <!-- Results Table -->
+    <div class="card">
+      <div class="card-header bg-orange">📊 النتائج المجمعة / Combined Gradation Results</div>
+      <div class="card-body">
+        <table><thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>CMR مجمع (جم)</th><th>% مار مجمع</th><th>% مار (شريط)</th><th>المعادلة</th></tr></thead>
+        <tbody id="summaryBody"><tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gradation Chart -->
+    <div class="card">
+      <div class="card-header bg-blue">📈 رسم بياني للتدرج / Gradation Curve</div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+          <div style="font-size:12px;color:#555">الرسم بيسحب البيانات مباشرة من جدول النتائج المجمعة.</div>
+          <button class="btn-calc" style="padding:8px 18px;font-size:13px" onclick="renderChart()">📉 تحديث الرسم</button>
+        </div>
+        <div id="gradChart" style="width:100%;height:420px"></div>
+      </div>
+    </div>
+
+    <!-- Classification -->
+    <div class="card">
+      <div class="card-header bg-orange">🏷️ التصنيف طبقاً للمواصفة / USCS Classification</div>
+      <div class="card-body">
+        <div class="two-col">
+          <!-- Atterberg inputs -->
+          <div class="seg" style="background:#e3f2fd">
+            <b style="color:#1A3A6B">حدّات أتربرج / Atterberg Limits</b>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+              <div>
+                <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Liquid Limit, LL (%)</label>
+                <input type="number" id="ll" value="" onchange="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plastic Limit, PL (%)</label>
+                <input type="number" id="pl" value="" onchange="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
+              </div>
+            </div>
+            <div style="margin-top:10px">
+              <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plasticity / اللدونة</label>
+              <select id="plasticityFlag" onchange="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px;background:#fff">
+                <option value="auto">تلقائي (Auto)</option>
+                <option value="yes">نعم — Plastic</option>
+                <option value="no">لا — Non Plastic (NP)</option>
+              </select>
+            </div>
+            <div style="font-size:11px;color:#555;margin-top:8px">لو العينة غير لدنة، اختار <b>Non Plastic</b> وسيُعتبر PI = NP تلقائياً.</div>
+          </div>
+
+          <!-- Classification result -->
+          <div class="seg" style="background:#f3e5ff">
+            <b style="color:#5B2D8E">نتيجة التصنيف / Classification Result</b>
+            <div id="classResultBox" style="margin-top:14px">
+              <div class="class-empty">أدخل LL و PL وشغّل الحساب للحصول على التصنيف.</div>
+            </div>
+            <div style="margin-top:12px;background:#fff;border-radius:6px;padding:10px;font-size:11px;color:#555;border:1px solid #e0c0ff">
+              <b>المدخلات المستخدمة للتصنيف:</b><br>
+              <span id="classInputsUsed">لم يتم الحساب بعد.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- END TAB 2 -->
+
+
+  <!-- ═══════════════════════════════════════════
+       TAB 3 — التقرير
+  ═══════════════════════════════════════════ -->
+  <div id="tab_report" class="main-tab-section">
+
+    <div class="card">
+      <div class="card-header bg-purple">🖨️ تقرير A4 احترافي / Professional A4 Report</div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+          <div style="font-size:12px;color:#555">التقرير يسحب البيانات من تبويب المشروع وجدول النتائج والرسم البياني والتصنيف.</div>
+          <button class="btn-calc" style="padding:8px 18px;font-size:13px" onclick="printReport()">🖨️ طباعة A4</button>
+        </div>
+        <div id="a4Report" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:16px;max-width:794px;margin:0 auto;box-shadow:0 2px 8px rgba(0,0,0,.08)">
+          <div style="text-align:center;border-bottom:2px solid #4a1a8a;padding-bottom:8px;margin-bottom:12px">
+            <div style="font-size:18px;font-weight:700;color:#4a1a8a">تقرير التحليل المنخلي - ASTM D6913-17</div>
+            <div style="font-size:11px;color:#666">Composite Sieving Double Separation | تقرير صفحة A4</div>
+          </div>
+          <div id="reportMeta" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:11px;margin-bottom:12px;border:1px solid #eee;border-radius:6px;padding:10px;background:#fafafa"></div>
+          <div id="reportClass" style="background:#f3e5ff;border-radius:6px;padding:10px;margin-bottom:12px;font-size:12px;font-weight:700;color:#5B2D8E">التصنيف: —</div>
+          <div style="font-size:12px;font-weight:700;color:#1A3A6B;margin:8px 0">النتائج المجمعة</div>
+          <div id="reportTableWrap"></div>
+          <div style="margin-top:12px">
+            <img id="reportChartImg" style="width:100%;max-height:300px;object-fit:contain;border:1px solid #ddd;border-radius:6px" alt="Gradation Chart">
+          </div>
+          <div style="margin-top:12px;font-size:10px;color:#777;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div>الظروف البيئية: <span id="repEnv">—</span></div>
+            <div>طريقة الاختبار: <span id="repMethod">—</span></div>
+            <div>نوع النخل: <span id="repSieving">—</span></div>
+          </div>
+          <div style="margin-top:14px;border-top:1px solid #eee;padding-top:10px;font-size:10px;color:#aaa;text-align:center">
+            تقرير صادر بواسطة ASTM D6913-17 Double Separation App
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- END TAB 3 -->
+
+</div><!-- end .container -->
+
+
+<!-- ═══ GUIDE MODAL ═══ -->
+<div id="guideModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div style="font-size:16px;font-weight:700">📖 دليل الاستخدام — ASTM D6913-17</div>
+        <div style="font-size:11px;opacity:.85;margin-top:3px">فصل مركب بفصلين | Composite Sieving – Double Separation</div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('guideModal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;border-bottom:2px solid #e0e0e0;padding-bottom:10px">
+        <button class="inner-gtab active" onclick="showGuideTab('gtab1',this)">1️⃣ التعريفات</button>
+        <button class="inner-gtab" onclick="showGuideTab('gtab2',this)">2️⃣ تجهيز العينة</button>
+        <button class="inner-gtab" onclick="showGuideTab('gtab3',this)">3️⃣ مناخل الفصل</button>
+        <button class="inner-gtab" onclick="showGuideTab('gtab4',this)">4️⃣ الإجراء</button>
+        <button class="inner-gtab" onclick="showGuideTab('gtab5',this)">5️⃣ الحسابات</button>
+        <button class="inner-gtab" onclick="showGuideTab('gtab6',this)">6️⃣ استخدام البرنامج</button>
+      </div>
+      <div id="gtab1" class="gtab-content">
+        <h3 style="color:#5B2D8E;border-right:4px solid #5B2D8E;padding-right:10px;margin-bottom:12px">📌 الرموز والتعريفات</h3>
+        <table><thead><tr style="background:#e8d5f5"><th>الرمز</th><th>الاسم بالعربي</th><th>الشرح</th></tr></thead><tbody>
+          <tr><td style="font-weight:700;color:#5B2D8E">S,Md</td><td>وزن العينة الكلي الجاف</td><td>إجمالي كتلة العينة بعد التجفيف</td></tr>
+          <tr><td style="font-weight:700;color:#1F6B3A">1stCP,Md</td><td>الجزء الخشن الأول</td><td>المحجوز على Sep.2 = ¾" (19mm)</td></tr>
+          <tr><td style="font-weight:700;color:#1F6B3A">1stFP,Md</td><td>الجزء الناعم الأول</td><td>الجزء اللي عدّى من Sep.2</td></tr>
+          <tr><td style="font-weight:700;color:#1A3A6B">1stSubS,Md</td><td>العينة الفرعية الأولى</td><td>عينة ممثلة من 1stFP</td></tr>
+          <tr><td style="font-weight:700;color:#1A3A6B">2ndCP</td><td>الجزء الخشن الثاني</td><td>المحجوز على Sep.1 = ⅜" (9.5mm) داخل 1stSubS</td></tr>
+          <tr><td style="font-weight:700;color:#8B4500">2ndSubS,Md</td><td>العينة الفرعية الثانية</td><td>عينة ممثلة من 2ndFP</td></tr>
+          <tr><td style="font-weight:700;color:#c62828">FCMR</td><td>المحجوز التراكمي الجزئي</td><td>كتلة المحجوز داخل العينة الفرعية</td></tr>
+          <tr><td style="font-weight:700;color:#5B2D8E">1stCSCF</td><td>عامل تصحيح الفصل الأول</td><td>% المار عند Sep.2 بالنسبة للعينة الكلية</td></tr>
+          <tr><td style="font-weight:700;color:#5B2D8E">2ndCSCF</td><td>عامل تصحيح الفصل الثاني</td><td>% المار عند Sep.1 بالنسبة للعينة الكلية</td></tr>
+        </tbody></table>
+      </div>
+      <div id="gtab2" class="gtab-content" style="display:none">
+        <h3 style="color:#1F6B3A;border-right:4px solid #1F6B3A;padding-right:10px;margin-bottom:12px">🧪 تجهيز العينة</h3>
+        <div class="seg" style="background:#e8f5e9"><b>الحد الأدنى لوزن العينة</b>
+          <table style="margin-top:8px"><thead><tr><th>أكبر حجم حبة</th><th>أدنى وزن جاف</th></tr></thead><tbody>
+            <tr><td>19 mm (¾")</td><td>≥ 1.3 kg</td></tr>
+            <tr><td>25.4 mm (1")</td><td>≥ 3 kg</td></tr>
+            <tr><td>38.1 mm (1½")</td><td>≥ 10 kg</td></tr>
+            <tr><td>50.8 mm (2")</td><td>≥ 25 kg</td></tr>
+            <tr><td>76.2 mm (3")</td><td>≥ 70 kg</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+      <div id="gtab3" class="gtab-content" style="display:none">
+        <h3 style="color:#1A3A6B;border-right:4px solid #1A3A6B;padding-right:10px;margin-bottom:12px">🔍 اختيار مناخل الفصل</h3>
+        <div class="seg" style="background:#e3f2fd"><b>الاختيار القياسي</b><br>Sep.2 = ¾" = 19mm ، Sep.1 = ⅜" = 9.5mm.</div>
+        <div class="seg" style="background:#fce4ec"><b>متى أغيّر Sep.1؟</b><br>ممكن تستخدم No.4 أو No.10 لو العينة مناسبة.</div>
+      </div>
+      <div id="gtab4" class="gtab-content" style="display:none">
+        <h3 style="color:#8B4500;border-right:4px solid #8B4500;padding-right:10px;margin-bottom:12px">📋 الإجراء خطوة بخطوة</h3>
+        <div class="seg" style="background:#f3e5ff"><b>1) تجهيز العينة</b><br>جفف العينة، برّدها، ووزنها.</div>
+        <div class="seg" style="background:#e8f5e9"><b>2) الفصل الأول على Sep.2</b><br>انخل العينة الكلية على ¾" (19mm). المحجوز = 1stCP.</div>
+        <div class="seg" style="background:#e3f2fd"><b>3) تكوين 1stSubS</b><br>خذ عينة فرعية ممثلة من الجزء المار من Sep.2.</div>
+        <div class="seg" style="background:#fff3e0"><b>4) الفصل الثاني على Sep.1</b><br>انخل 1stSubS على ⅜" (9.5mm). المحجوز = 2ndCP.</div>
+        <div class="seg" style="background:#fce4ec"><b>5) تكوين 2ndSubS</b><br>خد عينة فرعية ممثلة من 2ndFP ثم انخلها على No.4 → No.200.</div>
+      </div>
+      <div id="gtab5" class="gtab-content" style="display:none">
+        <h3 style="color:#1A3A6B;border-right:4px solid #1A3A6B;padding-right:10px;margin-bottom:14px">🔢 الحسابات التفصيلية</h3>
+        <div class="seg" style="background:#e3f2fd"><b>FP,Md</b><br>FP,Md = FP,Mm ÷ (1 + wfp/100)</div>
+        <div class="seg" style="background:#f3e5ff"><b>1stCSCF</b><br>1stCSCF = (1 − 1stCP,CMR@Sep.2 ÷ S,Md) × 100</div>
+        <div class="seg" style="background:#fff3e0"><b>2ndCSCF</b><br>2ndCSCF = 1stCSCF × (1 − 2ndCP,CMR@Sep.1 ÷ 1stSubS,Md)</div>
+        <div class="seg" style="background:#e8f5e9"><b>Combined % Passing at any sieve N</b><br>PPN = 2ndCSCF × (1 − FCMR_N ÷ 2ndSubS,Md)</div>
+      </div>
+      <div id="gtab6" class="gtab-content" style="display:none">
+        <h3 style="color:#5B2D8E;border-right:4px solid #5B2D8E;padding-right:10px;margin-bottom:14px">💻 طريقة استخدام البرنامج</h3>
+        <div class="seg" style="background:#e8f5e9"><b>تبويب 1 — بيانات المشروع</b><br>أدخل بيانات العميل والمشروع والفني.</div>
+        <div class="seg" style="background:#f3e5ff"><b>تبويب 2 — بيانات الاختبار</b><br>أدخل أوزان المناخل واضغط "احسب النتائج".</div>
+        <div class="seg" style="background:#e3f2fd"><b>تبويب 3 — التقرير</b><br>استعرض أو اطبع التقرير A4 بعد الحساب.</div>
+        <div class="seg" style="background:#fff3e0"><b>الحقول الصفراء</b>: إدخال يدوي. <b>الحقول الخضراء</b>: محسوبة تلقائياً.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ═══ Utilities ═══ */
+function v(id){const x=parseFloat(document.getElementById(id).value);return isNaN(x)?0:x}
+function fmt(n){return(isNaN(n)||!isFinite(n))?'—':n.toFixed(1)}
+function fmtPct(n){return(isNaN(n)||!isFinite(n))?'—':n.toFixed(1)+'%'}
+function showStatus(msg,ok){const el=document.getElementById('status');el.textContent=msg;el.className=ok?'status-ok':'status-err'}
+
+/* ═══ Tab switching ═══ */
+function switchMainTab(name){
+  ['project','test','report'].forEach(t=>{
+    document.getElementById('tab_'+t).classList.toggle('active', t===name);
+    document.getElementById('btn_'+t).classList.toggle('active', t===name);
+  });
+  if(name==='report'){syncReport();updateReportTable();updateReportChart();}
+}
+
+function showGuideTab(id, btn){
+  document.querySelectorAll('#guideModal .gtab-content').forEach(el=>el.style.display='none');
+  document.querySelectorAll('#guideModal .inner-gtab').forEach(el=>el.classList.remove('active'));
+  document.getElementById(id).style.display='block';
+  btn.classList.add('active');
+}
+
+/* ═══ Main calculate ═══ */
+function calculate(){
+  const FP_Mm=v('fpmm'), wfp=v('wfp'), CP1_Md=v('cp1md'), SubS1=v('subs1md'), SubS2=v('subs2md');
+  const FP_Md=FP_Mm/(1+wfp/100);
+  const S_Md=CP1_Md+FP_Md;
+  document.getElementById('fpmd_disp').textContent=FP_Md?FP_Md.toFixed(3)+' جم':'—';
+  document.getElementById('smd_disp').textContent=S_Md?S_Md.toFixed(3)+' جم':'—';
+
+  if(!S_Md){showStatus('أدخل البيانات الأساسية أولاً',false);return;}
+
+  const cp={75:v('cp_75'),63:v('cp_63'),50:v('cp_50'),37.5:v('cp_375'),25:v('cp_25'),19:v('cp_19')};
+  [['75',75],['63',63],['50',50],['375',37.5],['25',25],['19',19]].forEach(([k,m])=>{
+    document.getElementById('p_cp_'+k).textContent=fmtPct((1-cp[m]/S_Md)*100);
+  });
+
+  const CSCF1=(1-cp[19]/S_Md)*100;
+  const ss1_19=v('ss1_19'), ss1_95=v('ss1_95');
+  document.getElementById('p_ss1_19').textContent=fmtPct(CSCF1*(1-ss1_19/SubS1));
+  const CSCF2=CSCF1*(1-ss1_95/SubS1);
+  document.getElementById('p_ss1_95').textContent=fmtPct(CSCF2);
+  document.getElementById('cscf1_val').textContent=fmtPct(CSCF1);
+  document.getElementById('cscf2_val').textContent=fmtPct(CSCF2);
+
+  const FP1_Md=S_Md-cp[19];
+  const FP2_Md=(FP1_Md/SubS1)*(SubS1-ss1_95);
+  document.getElementById('cffp2_val').textContent=(SubS2?FP2_Md/SubS2:0).toFixed(4);
+
+  const fcmr={'9.5':v('ss2_95'),'4.75':v('ss2_475'),'2':v('ss2_2'),'0.425':v('ss2_0425'),'0.15':v('ss2_015'),'0.075':v('ss2_0075')};
+  const partialIds={'9.5':'fp_95','4.75':'fp_475','2':'fp_2','0.425':'fp_0425','0.15':'fp_015','0.075':'fp_0075'};
+  Object.keys(fcmr).forEach(k=>{
+    document.getElementById(partialIds[k]).textContent=fmtPct((1-fcmr[k]/SubS2)*100);
+  });
+
+  /* Build summary rows — combined passing */
+  const labels={
+    coarse:'CMR = 1stCP,CumRet → % مار = (1−CMR/S,Md)×100',
+    sep2:'CMR@Sep.2 → 1stCSCF',
+    sep1:'CMR = 1stCP + (FP1/SubS1)×FCMR@Sep.1 → 2ndCSCF',
+    fine:'CMR = 1stCP + (FP1/SubS1)×[FCMR@Sep.1 + FCMR×(SubS1−FCMR@Sep.1)/SubS2]'
+  };
+  const rows=[
+    {lbl:'3"',   mm:75,    type:'coarse', cmr:cp[75]},
+    {lbl:'2½"',  mm:63,    type:'coarse', cmr:cp[63]},
+    {lbl:'2"',   mm:50,    type:'coarse', cmr:cp[50]},
+    {lbl:'1½"',  mm:37.5,  type:'coarse', cmr:cp[37.5]},
+    {lbl:'1"',   mm:25,    type:'coarse', cmr:cp[25]},
+    {lbl:'¾"',   mm:19,    type:'sep2',   cmr:cp[19]},
+    {lbl:'⅜"',   mm:9.5,   type:'sep1',   cmr:cp[19]+(FP1_Md/SubS1)*ss1_95},
+    {lbl:'No.4', mm:4.75,  type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['4.75']*(SubS1-ss1_95)/SubS2)},
+    {lbl:'No.10',mm:2,     type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['2']*(SubS1-ss1_95)/SubS2)},
+    {lbl:'No.40',mm:0.425, type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['0.425']*(SubS1-ss1_95)/SubS2)},
+    {lbl:'No.100',mm:0.15, type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['0.15']*(SubS1-ss1_95)/SubS2)},
+    {lbl:'No.200',mm:0.075,type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['0.075']*(SubS1-ss1_95)/SubS2)}
+  ];
+
+  const body=document.getElementById('summaryBody');
+  body.innerHTML='';
+  rows.forEach(r=>{
+    const pp=(1-r.cmr/S_Md)*100;
+    const tr=document.createElement('tr');
+    const cls=r.type==='fine'?'td-calc':(r.type==='sep1'?'td-sep':'td-pass');
+    tr.innerHTML=`<td><b>${r.lbl}</b></td><td>${r.mm}</td><td class="td-input">${fmt(r.cmr)}</td><td class="${cls}" data-mm="${r.mm}">${fmtPct(pp)}</td><td>${fmtPct(pp)}</td><td style="font-size:10px;color:#666;text-align:right">${labels[r.type]}</td>`;
+    body.appendChild(tr);
+  });
+
+  showStatus('✅ تم الحساب بنجاح — ASTM D6913-17 Double Separation',true);
+  document.getElementById('btnSave').disabled=false;
+
+  runClassification();
+  renderChart();
+  syncReport();
+  updateReportTable();
+}
+
+/* ═══ Read combined passing from summaryBody ═══ */
+function getCombinedPassing(mmTarget){
+  const rows=document.querySelectorAll('#summaryBody tr td[data-mm]');
+  for(const td of rows){
+    if(parseFloat(td.getAttribute('data-mm'))===mmTarget){
+      return parseFloat(td.textContent.replace('%',''));
+    }
+  }
+  return NaN;
+}
+
+/* ═══ USCS Classification ═══ */
+function classifySoil(){
+  const ll=parseFloat(document.getElementById('ll').value);
+  const pl=parseFloat(document.getElementById('pl').value);
+  const pf=document.getElementById('plasticityFlag').value||'auto';
+
+  if(pf==='no') return {symbol:'NP',name:'Non Plastic',detail:'العينة غير لدنة حسب اختيار المستخدم.'};
+
+  /* Get combined passing from summaryBody (correct for USCS) */
+  const p200=getCombinedPassing(0.075);
+  const p4  =getCombinedPassing(4.75);
+  const p19 =getCombinedPassing(19);
+
+  if(isNaN(p200)) return {symbol:'—',name:'',detail:'شغّل الحساب أولاً حتى تتوفر نتائج No.200 المجمعة.'};
+  if(isNaN(ll)||isNaN(pl)) return {symbol:'—',name:'أدخل LL و PL',detail:'لازم تدخل LL و PL أو تختار Non Plastic لو العينة غير لدنة.'};
+  if(pl>=ll) return {symbol:'⚠️',name:'بيانات غير منطقية',detail:'PL لازم يكون أصغر من LL.'};
+
+  const pi=ll-pl;
+  const aLine=0.73*(ll-20);
+
+  /* Fine-grained: more than 50% passing No.200 */
+  if(p200>=50){
+    let symbol='', name='';
+    const borderline=(ll>=12&&ll<=25&&pi>=4&&pi<=7);
+    if(borderline){symbol='CL-ML';name='Lean Clay with Silt (Borderline)';}
+    else if(ll<50){ symbol=pi>aLine?'CL':'ML'; name=pi>aLine?'Lean Clay':'Silt';}
+    else { symbol=pi>aLine?'CH':'MH'; name=pi>aLine?'Fat Clay':'Elastic Silt';}
+    return {symbol,name,detail:`LL=${ll.toFixed(1)}% ، PL=${pl.toFixed(1)}% ، PI=${pi.toFixed(1)}% ، A-line=${aLine.toFixed(1)}% — Fine-grained طبقاً لـ USCS/ASTM D2487.`};
+  }
+
+  /* Coarse-grained: less than 50% passing No.200 */
+  const fines=p200;
+  const clayey=pi>aLine;
+  const finesSymbol=clayey?'C':'M';
+  const groupType=(!isNaN(p4)&&p4<50)?'G':'S'; // retained on No.4 > 50% → Gravel
+
+  const clean=fines<5;
+  const dual=fines>=5&&fines<=12;
+  const withFines=fines>12;
+
+  let detail=`LL=${ll.toFixed(1)}% ، PI=${pi.toFixed(1)}% ، % مار No.200=${fines.toFixed(1)}% ، % مار No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
+
+  if(clean){
+    const base=groupType==='G'?'Gravel':'Sand';
+    return {symbol:groupType+'W/'+groupType+'P', name:`Well/Poorly Graded ${base}`,
+      detail:detail+' — أقل من 5% ناعم. لتحديد W/P يلزم Cu و Cc من الرسم الحبيبي.'};
+  }
+
+  if(dual){
+    const sym=`${groupType}W-${groupType}${finesSymbol} / ${groupType}P-${groupType}${finesSymbol}`;
+    return {symbol:sym, name:`Dual Symbol — ${groupType==='G'?'Gravel':'Sand'} with ${clayey?'Clayey':'Silty'} Fines`,
+      detail:detail+' — نطاق Dual Symbols (5%–12%). يلزم Cu و Cc من الرسم الحبيبي لتحديد W أو P.'};
+  }
+
+  if(withFines){
+    const sym=groupType+finesSymbol;
+    const names={'GC':'Clayey Gravel','GM':'Silty Gravel','SC':'Clayey Sand','SM':'Silty Sand'};
+    return {symbol:sym, name:names[sym]||sym, detail:detail+' — أكثر من 12% ناعم.'};
+  }
+
+  return {symbol:'—',name:'',detail:'لم يمكن تحديد التصنيف.'};
+}
+
+function runClassification(){
+  const res=classifySoil();
+  const box=document.getElementById('classResultBox');
+  const info=document.getElementById('classInputsUsed');
+  if(res.symbol==='—'||res.symbol==='⚠️'||res.symbol==='NP'){
+    box.innerHTML=`<div class="class-empty">${res.name||res.symbol}</div><div class="class-detail" style="margin-top:8px">${res.detail}</div>`;
+  } else {
+    box.innerHTML=`<div class="class-badge">${res.symbol}</div><div class="class-name">${res.name}</div><div class="class-detail">${res.detail}</div>`;
+  }
+  if(info) info.textContent=res.detail;
+  /* Sync to report */
+  const rc=document.getElementById('reportClass');
+  if(rc) rc.textContent='التصنيف: '+res.symbol+(res.name?' — '+res.name:'');
+}
+
+/* ═══ Render chart ═══ */
+function renderChart(){
+  const rows=Array.from(document.querySelectorAll('#summaryBody tr'));
+  const data=[];
+  rows.forEach(r=>{
+    const tds=r.querySelectorAll('td');
+    if(tds.length>=4){
+      const sieve=tds[0].innerText.trim();
+      const mm=parseFloat(tds[1].innerText.trim());
+      const pass=parseFloat((tds[3].innerText||'').replace('%',''));
+      if(!isNaN(mm)&&!isNaN(pass)) data.push({sieve,mm,pass});
+    }
+  });
+  const el=document.getElementById('gradChart');
+  if(!data.length){if(el) el.innerHTML='<div style="text-align:center;color:#888;padding:40px">أدخل البيانات واحسب النتائج أولاً</div>';return;}
+  data.sort((a,b)=>b.mm-a.mm);
+  const trace={x:data.map(d=>d.mm),y:data.map(d=>d.pass),text:data.map(d=>`${d.sieve}: ${d.pass.toFixed(1)}%`),
+    mode:'lines+markers+text',textposition:'top center',
+    line:{color:'#5B2D8E',width:3},marker:{size:8,color:'#1F6B3A'},hovertemplate:'%{text}<extra></extra>'};
+  const layout={margin:{l:60,r:20,t:40,b:60},paper_bgcolor:'#fff',plot_bgcolor:'#fafafa',
+    title:{text:'Gradation Curve — نسبة المار مقابل حجم المنخل'},
+    xaxis:{title:'Sieve size (mm)',type:'log',autorange:'reversed',gridcolor:'#ddd',zeroline:false},
+    yaxis:{title:'Passing (%)',range:[0,100],gridcolor:'#ddd',zeroline:false},
+    shapes:[
+      {type:'line',x0:0.075,x1:75,y0:10,y1:10,line:{color:'#bbb',dash:'dot',width:1}},
+      {type:'line',x0:0.075,x1:75,y0:30,y1:30,line:{color:'#bbb',dash:'dot',width:1}},
+      {type:'line',x0:0.075,x1:75,y0:60,y1:60,line:{color:'#bbb',dash:'dot',width:1}},
+      {type:'line',x0:0.075,x1:75,y0:90,y1:90,line:{color:'#bbb',dash:'dot',width:1}}
+    ],showlegend:false};
+  Plotly.newPlot('gradChart',[trace],layout,{responsive:true,displayModeBar:false});
+}
+
+/* ═══ Reset ═══ */
+function resetForm(){
+  ['cp_75','cp_63','cp_50','cp_375','cp_25','cp_19','ss1_19','ss1_95','ss2_95','ss2_475','ss2_2','ss2_0425','ss2_015','ss2_0075','ll','pl'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('plasticityFlag').value='auto';
+  document.getElementById('summaryBody').innerHTML='<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr>';
+  ['fpmd_disp','smd_disp','cscf1_val','cscf2_val','cffp2_val'].forEach(id=>document.getElementById(id).textContent='—');
+  ['p_cp_75','p_cp_63','p_cp_50','p_cp_375','p_cp_25','p_cp_19','p_ss1_19','p_ss1_95','fp_95','fp_475','fp_2','fp_0425','fp_015','fp_0075'].forEach(id=>document.getElementById(id).textContent='—');
+  document.getElementById('status').className='';
+  document.getElementById('btnSave').disabled=true;
+  document.getElementById('classResultBox').innerHTML='<div class="class-empty">أدخل البيانات وشغّل الحساب للحصول على التصنيف.</div>';
+  document.getElementById('classInputsUsed').textContent='لم يتم الحساب بعد.';
+}
+
+/* ═══ Session save/load ═══ */
+function saveSession(){
+  const inputs={};
+  document.querySelectorAll('input[type=number],input[type=text],input[type=date],select').forEach(inp=>{if(inp.id)inputs[inp.id]=inp.value;});
+  const session={version:'D6913-v3',savedAt:new Date().toISOString(),label:'ASTM D6913 Double Separation',inputs};
+  const blob=new Blob([JSON.stringify(session,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a'),n=new Date();
+  a.href=url;a.download=`D6913_Session_${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}.json`;
+  a.click();URL.revokeObjectURL(url);showStatus('✅ تم حفظ بيانات الجلسة بنجاح!',true);
+}
+function loadSession(event){
+  const file=event.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const s=JSON.parse(e.target.result);
+      if(!s.inputs)throw new Error('ملف غير صالح');
+      Object.entries(s.inputs).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val;});
+      calculate();syncReport();updateReportTable();updateReportChart();
+      showStatus('✅ تم استيراد الجلسة بنجاح!',true);
+    }catch(err){showStatus('❌ '+err.message,false);}
+    event.target.value='';
+  };
+  r.readAsText(file);
+}
+function saveResults(){
+  const html=`<html><head><meta charset="utf-8"><title>D6913 Report</title></head><body><h1>تقرير ASTM D6913</h1><p>افتح الصفحة واضغط طباعة للحصول على نسخة ورقية.</p></body></html>`;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a'),n=new Date();
+  a.href=url;a.download=`D6913_Results_${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}.html`;
+  a.click();URL.revokeObjectURL(url);showStatus('✅ تم تحميل تقرير HTML',true);
+}
+
+/* ═══ Report helpers ═══ */
+function getProjectInfo(){
+  return{
+    clientName:document.getElementById('clientName')?.value||'',
+    projectName:document.getElementById('projectName')?.value||'',
+    siteLocation:document.getElementById('siteLocation')?.value||'',
+    sampleNo:document.getElementById('sampleNo')?.value||'',
+    sampleDate:document.getElementById('sampleDate')?.value||'',
+    testDate:document.getElementById('testDate')?.value||'',
+    technicianName:document.getElementById('technicianName')?.value||'',
+    envConditions:document.getElementById('envConditions')?.value||'',
+    methodUsed:document.getElementById('methodUsed')?.value||'',
+    sieveType:document.getElementById('sieveType')?.value||''
+  };
+}
+function syncReport(){
+  const info=getProjectInfo();
+  const meta=document.getElementById('reportMeta');
+  if(meta){
+    meta.innerHTML=`
+      <div><b>العميل:</b> ${info.clientName||'—'}</div>
+      <div><b>المشروع:</b> ${info.projectName||'—'}</div>
+      <div><b>الموقع:</b> ${info.siteLocation||'—'}</div>
+      <div><b>رقم العينة:</b> ${info.sampleNo||'—'}</div>
+      <div><b>استلام العينة:</b> ${info.sampleDate||'—'}</div>
+      <div><b>تاريخ الاختبار:</b> ${info.testDate||'—'}</div>
+      <div><b>الفني:</b> ${info.technicianName||'—'}</div>
+      <div><b>الظروف البيئية:</b> ${info.envConditions||'—'}</div>
+      <div><b>طريقة الاختبار:</b> ${info.methodUsed||'—'}</div>
+    `;
+  }
+  const repMethod=document.getElementById('repMethod');if(repMethod)repMethod.textContent=info.methodUsed||'—';
+  const repSieving=document.getElementById('repSieving');if(repSieving)repSieving.textContent=info.sieveType||'—';
+  const repEnv=document.getElementById('repEnv');if(repEnv)repEnv.textContent=info.envConditions||'—';
+}
+function updateReportTable(){
+  const body=document.getElementById('summaryBody');
+  const wrap=document.getElementById('reportTableWrap');
+  if(!body||!wrap)return;
+  wrap.innerHTML='';
+  const tbl=document.createElement('table');
+  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:10px';
+  tbl.innerHTML='<thead><tr><th style="background:#e8d5f5;border:1px solid #ccc;padding:4px">المنخل</th><th style="background:#e8d5f5;border:1px solid #ccc;padding:4px">المقاس (mm)</th><th style="background:#e8d5f5;border:1px solid #ccc;padding:4px">CMR</th><th style="background:#e8d5f5;border:1px solid #ccc;padding:4px">% مار مجمع</th></tr></thead>';
+  const tb=document.createElement('tbody');
+  body.querySelectorAll('tr').forEach(tr=>{
+    const tds=tr.querySelectorAll('td');
+    if(tds.length>=4){
+      const row=document.createElement('tr');
+      row.innerHTML=`<td style="border:1px solid #ddd;padding:4px;text-align:center">${tds[0].innerText}</td><td style="border:1px solid #ddd;padding:4px;text-align:center">${tds[1].innerText}</td><td style="border:1px solid #ddd;padding:4px;text-align:center">${tds[2].innerText}</td><td style="border:1px solid #ddd;padding:4px;text-align:center;font-weight:700">${tds[3].innerText}</td>`;
+      tb.appendChild(row);
+    }
+  });
+  tbl.appendChild(tb);wrap.appendChild(tbl);
+}
+function updateReportChart(){
+  const chart=document.querySelector('#gradChart .js-plotly-plot');
+  const img=document.getElementById('reportChartImg');
+  if(chart&&window.Plotly){
+    Plotly.toImage(chart,{format:'png',width:1200,height:700}).then(url=>{img.src=url;});
+  }
+}
+function printReport(){
+  syncReport();updateReportTable();updateReportChart();
+  const el=document.getElementById('a4Report');
+  const w=window.open('','_blank','width=900,height=1200');
+  w.document.write(`<html><head><title>A4 Report</title><style>
+    @page{size:A4;margin:10mm}body{font-family:Segoe UI,Tahoma,Arial,sans-serif}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #ccc;padding:4px;font-size:10px;text-align:center}
+  </style></head><body>${el.outerHTML}</body></html>`);
+  w.document.close();w.focus();setTimeout(()=>w.print(),600);
+}
+
+/* ═══ Init ═══ */
+window.onload=()=>{switchMainTab('project');calculate();};
+</script>
+</body>
+</html>
