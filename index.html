@@ -313,23 +313,21 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
 
     <!-- Classification -->
     <div class="card">
-      <div class="card-header bg-orange">🏷️ التصنيف طبقاً للمواصفة / USCS Classification</div>
+      <div class="card-header bg-orange">🏷️ التصنيف / USCS (ASTM D2487) &amp; AASHTO (M 145)</div>
       <div class="card-body">
-        <div class="two-col">
-          <!-- Atterberg inputs -->
-          <div class="seg" style="background:#e3f2fd">
-            <b style="color:#1A3A6B">حدّات أتربرج / Atterberg Limits</b>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-              <div>
-                <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Liquid Limit, LL (%)</label>
-                <input type="number" id="ll" value="" oninput="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
-              </div>
-              <div>
-                <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plastic Limit, PL (%)</label>
-                <input type="number" id="pl" value="" oninput="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
-              </div>
+        <!-- Atterberg inputs row -->
+        <div class="seg" style="background:#e3f2fd;margin-bottom:12px">
+          <b style="color:#1A3A6B">حدّات أتربرج / Atterberg Limits</b>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+            <div>
+              <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Liquid Limit, LL (%)</label>
+              <input type="number" id="ll" value="" oninput="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
             </div>
-            <div style="margin-top:10px">
+            <div>
+              <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plastic Limit, PL (%)</label>
+              <input type="number" id="pl" value="" oninput="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
+            </div>
+            <div>
               <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plasticity / اللدونة</label>
               <select id="plasticityFlag" onchange="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px;background:#fff">
                 <option value="auto">تلقائي (Auto)</option>
@@ -337,25 +335,53 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
                 <option value="no">لا — Non Plastic (NP)</option>
               </select>
             </div>
-            <div style="font-size:11px;color:#555;margin-top:8px">لو العينة غير لدنة، اختار <b>Non Plastic</b> وسيُعتبر PI = NP تلقائياً.</div>
           </div>
+        </div>
 
-          <!-- Classification result -->
+        <!-- Two classification results side by side -->
+        <div class="two-col" style="margin-bottom:12px">
+          <!-- USCS result -->
           <div class="seg" style="background:#f3e5ff">
-            <b style="color:#5B2D8E">نتيجة التصنيف / Classification Result</b>
-            <div id="classResultBox" style="margin-top:14px">
-              <div class="class-empty">أدخل البيانات واضغط "احسب النتائج".</div>
+            <b style="color:#5B2D8E;font-size:12px">🔬 USCS — ASTM D2487</b>
+            <div id="classResultBox" style="margin-top:12px;text-align:center">
+              <div class="class-empty">احسب النتائج أولاً</div>
             </div>
-            <div style="margin-top:12px;background:#fff;border-radius:6px;padding:10px;font-size:11px;color:#555;border:1px solid #e0c0ff">
-              <b>تفاصيل التصنيف:</b><br>
-              <span id="classInputsUsed">لم يتم الحساب بعد.</span>
+            <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:10px;color:#555;border:1px solid #e0c0ff">
+              <span id="classInputsUsed">—</span>
+            </div>
+          </div>
+          <!-- AASHTO result -->
+          <div class="seg" style="background:#fff3e0">
+            <b style="color:#8B4500;font-size:12px">🛣️ AASHTO — M 145</b>
+            <div id="aashtoResultBox" style="margin-top:12px;text-align:center">
+              <div class="class-empty">احسب النتائج أولاً</div>
+            </div>
+            <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:10px;color:#555;border:1px solid #ffcc80">
+              <span id="aashtoDetail">—</span>
             </div>
           </div>
         </div>
 
+        <!-- Classification summary table -->
+        <div style="background:#fafafa;border:1px solid #e0c0ff;border-radius:8px;padding:12px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:#4a1a8a;margin-bottom:8px">📋 جدول التصنيف المقارن / Classification Summary</div>
+          <table style="font-size:11px">
+            <thead><tr>
+              <th style="background:#5B2D8E;color:#fff">النظام</th>
+              <th style="background:#5B2D8E;color:#fff">الرمز</th>
+              <th style="background:#5B2D8E;color:#fff">الاسم</th>
+              <th style="background:#5B2D8E;color:#fff">المواصفة</th>
+              <th style="background:#5B2D8E;color:#fff">الاستخدام</th>
+            </tr></thead>
+            <tbody id="classTableBody">
+              <tr><td colspan="5" style="text-align:center;color:#aaa;padding:12px">احسب النتائج أولاً</td></tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- Cu / Cc / D values bar -->
-        <div style="background:#e8f5e9;border-radius:8px;padding:12px 16px;margin-top:12px">
-          <div style="font-size:11px;font-weight:700;color:#1F6B3A;margin-bottom:10px">📐 معاملات التدرج / Gradation Coefficients — تُحسب تلقائياً من منحنى التدرج</div>
+        <div style="background:#e8f5e9;border-radius:8px;padding:12px 16px">
+          <div style="font-size:11px;font-weight:700;color:#1F6B3A;margin-bottom:10px">📐 معاملات التدرج / Gradation Coefficients</div>
           <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
             <div class="param-box input-green"><label>D₁₀ (mm)</label><div class="calc-val" id="d10_val">—</div></div>
             <div class="param-box input-green"><label>D₃₀ (mm)</label><div class="calc-val" id="d30_val">—</div></div>
@@ -364,9 +390,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
             <div class="param-box" style="background:#fff9c4"><label>Cc = D₃₀²/(D₆₀×D₁₀)</label><div class="calc-val" id="cc_val" style="border-color:#f9a825;color:#8B4500">—</div></div>
             <div class="param-box input-blue"><label>تحقق GW/SW</label><div class="calc-val" id="cucc_check" style="font-size:11px;color:#1A3A6B">—</div></div>
           </div>
-          <div style="font-size:10px;color:#666;margin-top:8px">
-            GW: Cᵤ ≥ 4 و 1 ≤ Cc ≤ 3 | SW: Cᵤ ≥ 6 و 1 ≤ Cc ≤ 3 | بقيتها GP أو SP
-          </div>
+          <div style="font-size:10px;color:#666;margin-top:8px">GW: Cᵤ ≥ 4 و 1 ≤ Cc ≤ 3 | SW: Cᵤ ≥ 6 و 1 ≤ Cc ≤ 3 | بقيتها GP أو SP</div>
         </div>
       </div>
     </div>
@@ -547,38 +571,66 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
 
     <!-- Classification -->
     <div class="card">
-      <div class="card-header bg-orange">🏷️ التصنيف — فصل واحد / USCS Classification</div>
+      <div class="card-header bg-orange">🏷️ التصنيف — فصل واحد / USCS (ASTM D2487) &amp; AASHTO (M 145)</div>
       <div class="card-body">
-        <div class="two-col">
-          <div class="seg" style="background:#e3f2fd">
-            <b style="color:#1A3A6B">حدّات أتربرج / Atterberg Limits</b>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-              <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Liquid Limit, LL (%)</label>
-                <input type="number" id="s1_ll" value="" oninput="s1_runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px"></div>
-              <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plastic Limit, PL (%)</label>
-                <input type="number" id="s1_pl" value="" oninput="s1_runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px"></div>
-            </div>
-            <div style="margin-top:10px">
-              <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plasticity</label>
+        <!-- Atterberg inputs -->
+        <div class="seg" style="background:#e3f2fd;margin-bottom:12px">
+          <b style="color:#1A3A6B">حدّات أتربرج / Atterberg Limits</b>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+            <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Liquid Limit, LL (%)</label>
+              <input type="number" id="s1_ll" value="" oninput="s1_runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px"></div>
+            <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plastic Limit, PL (%)</label>
+              <input type="number" id="s1_pl" value="" oninput="s1_runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px"></div>
+            <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plasticity</label>
               <select id="s1_plasticityFlag" onchange="s1_runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px;background:#fff">
                 <option value="auto">تلقائي (Auto)</option>
                 <option value="no">Non Plastic (NP)</option>
               </select>
             </div>
           </div>
+        </div>
+
+        <!-- Two classification results -->
+        <div class="two-col" style="margin-bottom:12px">
           <div class="seg" style="background:#f3e5ff">
-            <b style="color:#5B2D8E">نتيجة التصنيف / Result</b>
-            <div id="s1_classResultBox" style="margin-top:14px">
-              <div class="class-empty">أدخل البيانات واضغط "احسب النتائج".</div>
+            <b style="color:#5B2D8E;font-size:12px">🔬 USCS — ASTM D2487</b>
+            <div id="s1_classResultBox" style="margin-top:12px;text-align:center">
+              <div class="class-empty">احسب النتائج أولاً</div>
             </div>
-            <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:11px;color:#555;border:1px solid #e0c0ff">
+            <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:10px;color:#555;border:1px solid #e0c0ff">
               <span id="s1_classDetail">—</span>
+            </div>
+          </div>
+          <div class="seg" style="background:#fff3e0">
+            <b style="color:#8B4500;font-size:12px">🛣️ AASHTO — M 145</b>
+            <div id="s1_aashtoResultBox" style="margin-top:12px;text-align:center">
+              <div class="class-empty">احسب النتائج أولاً</div>
+            </div>
+            <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:10px;color:#555;border:1px solid #ffcc80">
+              <span id="s1_aashtoDetail">—</span>
             </div>
           </div>
         </div>
 
+        <!-- Classification summary table -->
+        <div style="background:#fafafa;border:1px solid #e0c0ff;border-radius:8px;padding:12px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:#4a1a8a;margin-bottom:8px">📋 جدول التصنيف المقارن / Classification Summary</div>
+          <table style="font-size:11px">
+            <thead><tr>
+              <th style="background:#5B2D8E;color:#fff">النظام</th>
+              <th style="background:#5B2D8E;color:#fff">الرمز</th>
+              <th style="background:#5B2D8E;color:#fff">الاسم</th>
+              <th style="background:#5B2D8E;color:#fff">المواصفة</th>
+              <th style="background:#5B2D8E;color:#fff">الاستخدام</th>
+            </tr></thead>
+            <tbody id="s1_classTableBody">
+              <tr><td colspan="5" style="text-align:center;color:#aaa;padding:12px">احسب النتائج أولاً</td></tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- Cu / Cc bar -->
-        <div style="background:#e8f5e9;border-radius:8px;padding:12px 16px;margin-top:12px">
+        <div style="background:#e8f5e9;border-radius:8px;padding:12px 16px">
           <div style="font-size:11px;font-weight:700;color:#1F6B3A;margin-bottom:10px">📐 معاملات التدرج — فصل واحد</div>
           <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
             <div class="param-box input-green"><label>D₁₀ (mm)</label><div class="calc-val" id="s1_d10_val">—</div></div>
@@ -984,21 +1036,100 @@ function getCombinedPassing(mmTarget){
   return NaN;
 }
 
+/* ═══ AASHTO M 145 Classification ═══ */
+function classifyAASHTO(getFn, ll, pl, isNP){
+  const p200=getFn(0.075); const p40=getFn(0.425); const p10=getFn(2);
+  if(isNaN(p200)) return {symbol:'—',name:'',gi:'—',detail:'شغّل الحساب أولاً.',use:''};
+  const PI=isNP?0:(!isNaN(ll)&&!isNaN(pl)&&pl<ll?ll-pl:NaN);
+  const piOk=!isNaN(PI); const llOk=!isNaN(ll);
+  /* Group Index */
+  function calcGI(f,l,pi){
+    if(isNaN(pi)||isNaN(l)) return 0;
+    const gi=(f-35)*(0.2+0.005*(l-40))+0.01*(f-15)*(pi-10);
+    return Math.max(0,Math.round(gi));
+  }
+  const aashtoUse={
+    'A-1-a':'رمل وحصى جيد التدرج — ممتاز كأساس','A-1-b':'رمل وحصى جيد التدرج — ممتاز كأساس',
+    'A-3':'رمل ناعم — جيد إلى ممتاز كأساس','A-2-4':'حصى/رمل بناعم قليل — جيد إلى ممتاز',
+    'A-2-5':'حصى/رمل بناعم قليل — جيد إلى ممتاز','A-2-6':'حصى/رمل بناعم طيني — مقبول',
+    'A-2-7':'حصى/رمل بناعم طيني عالي اللدونة — مقبول إلى رديء',
+    'A-4':'تربة طمي — رديء إلى مقبول كأساس','A-5':'طمي لدن عالي — رديء',
+    'A-6':'طين لدن متوسط — رديء','A-7-5':'طين مرن/لدن — رديء جداً','A-7-6':'طين انتفاخي — رديء جداً'
+  };
+  const p10v=isNaN(p10)?100:p10, p40v=isNaN(p40)?100:p40;
+  let sym,name,gi=0;
+  if(p200<=15&&p40v<=30&&p10v<=50&&(!piOk||PI<=6)){sym='A-1-a';name='تربة حبيبية خشنة';}
+  else if(p200<=25&&p40v<=50&&(!piOk||PI<=6)){sym='A-1-b';name='تربة حبيبية';}
+  else if(p200<=10&&isNP){sym='A-3';name='رمل ناعم';}
+  else if(p200<=35&&llOk&&piOk&&ll<=40&&PI<=10){sym='A-2-4';name='تربة حبيبية بناعم طمي';gi=calcGI(p200,ll,PI);}
+  else if(p200<=35&&llOk&&piOk&&ll>40&&PI<=10){sym='A-2-5';name='تربة حبيبية بناعم طمي';gi=calcGI(p200,ll,PI);}
+  else if(p200<=35&&llOk&&piOk&&ll<=40&&PI>10){sym='A-2-6';name='تربة حبيبية بناعم طيني';gi=calcGI(p200,ll,PI);}
+  else if(p200<=35&&llOk&&piOk&&ll>40&&PI>10){sym='A-2-7';name='تربة حبيبية بناعم طيني';gi=calcGI(p200,ll,PI);}
+  else if(!llOk||!piOk){
+    if(p200>35) return {symbol:'A-4/A-7?',name:'يلزم LL و PI للتحديد',gi:'—',detail:`% مار No.200=${p200.toFixed(1)}% — أدخل LL و PL`,use:''};
+    return {symbol:'A-2?',name:'يلزم LL و PI',gi:'—',detail:`% مار No.200=${p200.toFixed(1)}%`,use:''};
+  }
+  else if(p200>35&&ll<=40&&PI<=10){sym='A-4';name='تربة طمي';gi=calcGI(p200,ll,PI);}
+  else if(p200>35&&ll>40&&PI<=10){sym='A-5';name='طمي عالي اللدونة';gi=calcGI(p200,ll,PI);}
+  else if(p200>35&&ll<=40&&PI>10){sym='A-6';name='تربة طينية';gi=calcGI(p200,ll,PI);}
+  else if(p200>35&&ll>40&&PI>LL-30){sym='A-7-6';name='طين انتفاخي';gi=calcGI(p200,ll,PI);}
+  else{sym='A-7-5';name='طين مرن';gi=calcGI(p200,ll,PI);}
+  const llStr=llOk?`LL=${ll.toFixed(0)}% ، `:'' ; const piStr=piOk?`PI=${PI.toFixed(0)}% ، `:'NP ، ';
+  return {symbol:sym,name,gi,detail:`${llStr}${piStr}% مار No.200=${p200.toFixed(1)}%`,use:aashtoUse[sym]||''};
+}
+
+/* ═══ Render classification table ═══ */
+function renderClassTable(uscs, aashto, tbodyId){
+  const tbody=document.getElementById(tbodyId);
+  if(!tbody) return;
+  const uscsUse={
+    GW:'أساسات، ردم، رصف',GP:'أساسات، ردم',GW_GC:'أساسات مع طين',GW_GM:'أساسات مع طمي',
+    GP_GC:'أساسات/ردم',GP_GM:'أساسات/ردم',SW:'أساسات، ردم، رصف',SP:'أساسات، ردم',
+    SW_SC:'أساسات مع طين',SW_SM:'أساسات مع طمي',SP_SC:'ردم وأساسات',SP_SM:'ردم وأساسات',
+    GM:'أساسات، حواجز مائية',GC:'حواجز، أساسات',SM:'أساسات، ردم',SC:'حواجز، أساسات',
+    ML:'ردم محدود',CL:'حواجز، أساسات',MH:'ردم (يُتجنب)',CH:'حواجز (انتباه للانتفاخ)',
+    'CL-ML':'مراجعة مطلوبة','NP':'—'
+  };
+  const sym=uscs.symbol.replace(/-/g,'_');
+  const uscsRow=`<tr style="background:#f3e5ff">
+    <td style="font-weight:700;color:#5B2D8E">USCS<br><span style="font-size:9px;color:#888">ASTM D2487</span></td>
+    <td><span style="display:inline-block;background:#5B2D8E;color:#fff;padding:3px 10px;border-radius:6px;font-weight:900;font-size:13px">${uscs.symbol}</span></td>
+    <td>${uscs.name||'—'}</td>
+    <td style="font-size:10px">ASTM D2487</td>
+    <td style="font-size:10px">${uscsUse[sym]||uscsUse[uscs.symbol]||'—'}</td>
+  </tr>`;
+  const giStr=aashto.gi==='—'?'—':`GI = ${aashto.gi}`;
+  const aashtoRow=`<tr style="background:#fff3e0">
+    <td style="font-weight:700;color:#8B4500">AASHTO<br><span style="font-size:9px;color:#888">M 145</span></td>
+    <td><span style="display:inline-block;background:#8B4500;color:#fff;padding:3px 10px;border-radius:6px;font-weight:900;font-size:13px">${aashto.symbol}</span><br><span style="font-size:10px;color:#8B4500">${giStr}</span></td>
+    <td>${aashto.name||'—'}</td>
+    <td style="font-size:10px">AASHTO M 145</td>
+    <td style="font-size:10px">${aashto.use||'—'}</td>
+  </tr>`;
+  tbody.innerHTML=uscsRow+aashtoRow;
+}
+
 /* ═══ USCS Classification (ASTM D2487) ═══ */
 function classifySoil(){
   const ll=parseFloat(document.getElementById('ll').value);
   const pl=parseFloat(document.getElementById('pl').value);
   const pf=document.getElementById('plasticityFlag').value||'auto';
 
-  if(pf==='no') return {symbol:'NP',name:'Non Plastic',detail:'العينة غير لدنة حسب اختيار المستخدم.'};
-
   const p200=getCombinedPassing(0.075);
   const p4  =getCombinedPassing(4.75);
 
   if(isNaN(p200)) return {symbol:'—',name:'',detail:'شغّل الحساب أولاً حتى تتوفر نتائج No.200 المجمعة.'};
 
+  const isNP=(pf==='no');
+
   /* ── Fine-grained ≥50% passes No.200 ── */
   if(p200>=50){
+    if(isNP){
+      if(isNaN(ll)) return {symbol:'ML',name:'ML — Silt طمي',detail:`% مار No.200=${p200.toFixed(1)}% ، NP — LL غير محدد، تصنيف ML افتراضي.`};
+      const sym=ll<50?'ML':'MH';
+      const nm=ll<50?'ML — Silt طمي':'MH — Elastic Silt طمي مرن';
+      return {symbol:sym,name:nm,detail:`% مار No.200=${p200.toFixed(1)}% ، LL=${ll.toFixed(1)}% ، NP — Fine-grained (ASTM D2487).`};
+    }
     if(isNaN(ll)||isNaN(pl))
       return {symbol:'—',name:'أدخل LL و PL',detail:'لازم تدخل LL و PL لتصنيف التربة الناعمة.'};
     if(pl>=ll)
@@ -1018,7 +1149,9 @@ function classifySoil(){
   const groupType=(!isNaN(p4)&&(p4-fines)<(50-fines))?'G':'S';
 
   let finesSymbol='M',clayey=false;
-  if(!isNaN(ll)&&!isNaN(pl)&&pl<ll){
+  if(isNP){
+    finesSymbol='M'; // Non-plastic → M-type per ASTM D2487
+  } else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll){
     const pi=ll-pl, aLine=0.73*(ll-20);
     clayey=pi>aLine; finesSymbol=clayey?'C':'M';
   }
@@ -1030,7 +1163,8 @@ function classifySoil(){
   let detail=`% مار No.200=${fines.toFixed(1)}% ، % مار No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
   if(cuAvail) detail+=` ، Cᵤ=${_Cu.toFixed(2)}`;
   if(ccAvail) detail+=` ، Cc=${_Cc.toFixed(2)}`;
-  if(!isNaN(ll)&&!isNaN(pl)&&pl<ll) detail+=` ، PI=${(ll-pl).toFixed(1)}%`;
+  if(isNP) detail+=' ، NP (غير لدنة → M-type)';
+  else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll) detail+=` ، PI=${(ll-pl).toFixed(1)}%`;
 
   if(fines<5){
     if(!cuAvail||!ccAvail)
@@ -1072,11 +1206,28 @@ function runClassification(){
   } else {
     const fs=res.symbol.length>8?'13px':res.symbol.length>5?'16px':'22px';
     const bg=res.symbol==='NP'?'#777':'#5B2D8E';
-    box.innerHTML=`<div class="class-badge" style="background:${bg};font-size:${fs}">${res.symbol}</div><div class="class-name" style="margin-top:8px">${res.name}</div><div class="class-detail" style="margin-top:6px">${res.detail}</div>`;
+    box.innerHTML=`<div class="class-badge" style="background:${bg};font-size:${fs}">${res.symbol}</div><div class="class-name" style="margin-top:8px">${res.name}</div>`;
   }
   if(info) info.textContent=res.detail;
+  /* AASHTO */
+  const ll=parseFloat(document.getElementById('ll').value);
+  const pl=parseFloat(document.getElementById('pl').value);
+  const isNP=(document.getElementById('plasticityFlag').value||'auto')==='no';
+  const ar=classifyAASHTO(getCombinedPassing,ll,pl,isNP);
+  const abox=document.getElementById('aashtoResultBox');
+  const adet=document.getElementById('aashtoDetail');
+  if(abox){
+    if(ar.symbol==='—'){
+      abox.innerHTML=`<div class="class-empty">${ar.detail}</div>`;
+    } else {
+      const fs=ar.symbol.length>6?'13px':'20px';
+      abox.innerHTML=`<div class="class-badge" style="background:#8B4500;font-size:${fs}">${ar.symbol}</div><div class="class-name" style="margin-top:8px;color:#8B4500">${ar.name}</div><div style="font-size:11px;color:#555;margin-top:4px">GI = ${ar.gi}</div>`;
+    }
+  }
+  if(adet) adet.textContent=ar.detail+(ar.use?' — '+ar.use:'');
+  if(!isEmpty) renderClassTable(res,ar,'classTableBody');
   const rc=document.getElementById('reportClass');
-  if(rc) rc.textContent='التصنيف: '+res.symbol+(res.name?' — '+res.name:'');
+  if(rc) rc.textContent='USCS: '+res.symbol+(res.name?' — '+res.name:'')+(ar.symbol!=='—'?' | AASHTO: '+ar.symbol+' (GI='+ar.gi+')':'');
 }
 
 /* ═══ Render chart ═══ */
@@ -1533,7 +1684,9 @@ function s1_calculate(){
   s1rows.forEach(r=>{
     const cls=r.type==='sub'?'td-calc':r.type==='sep'?'td-sep':'td-pass';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td><b>${r.lbl}</b></td><td>${r.mm}</td><td class="td-input">—</td><td class="${cls}" data-s1mm="${r.mm}">${fmtPct(r.pp)}</td><td>${fmtPct(r.pp)}</td><td style="font-size:10px;color:#666;text-align:right">${labelEq[r.type]}</td>`;
+    /* CMR مجمع (جم) = S_Md × (1 − pp/100) */
+    const cmrG=(!isNaN(r.pp)&&isFinite(r.pp)&&S_Md>0)?(S_Md*(1-r.pp/100)).toFixed(1):'—';
+    tr.innerHTML=`<td><b>${r.lbl}</b></td><td>${r.mm}</td><td class="td-input">${cmrG}</td><td class="${cls}" data-s1mm="${r.mm}">${fmtPct(r.pp)}</td><td>${fmtPct(r.pp)}</td><td style="font-size:10px;color:#666;text-align:right">${labelEq[r.type]}</td>`;
     body.appendChild(tr);
     if(!isNaN(r.pp)&&isFinite(r.pp)) _s1GradData.push({mm:r.mm,pass:r.pp});
   });
@@ -1570,11 +1723,17 @@ function s1_classifySoil(){
   const ll=parseFloat(document.getElementById('s1_ll')?.value);
   const pl=parseFloat(document.getElementById('s1_pl')?.value);
   const pf=document.getElementById('s1_plasticityFlag')?.value||'auto';
-  if(pf==='no') return {symbol:'NP',name:'Non Plastic',detail:'العينة غير لدنة.'};
   const p200=s1_getCombinedPassing(0.075);
   const p4  =s1_getCombinedPassing(4.75);
   if(isNaN(p200)) return {symbol:'—',name:'',detail:'شغّل الحساب أولاً.'};
+  const isNP=(pf==='no');
   if(p200>=50){
+    if(isNP){
+      if(isNaN(ll)) return {symbol:'ML',name:'ML — Silt طمي',detail:`% مار No.200=${p200.toFixed(1)}% ، NP — LL غير محدد، تصنيف ML افتراضي.`};
+      const sym=ll<50?'ML':'MH';
+      const nm=ll<50?'ML — Silt طمي':'MH — Elastic Silt طمي مرن';
+      return {symbol:sym,name:nm,detail:`% مار No.200=${p200.toFixed(1)}% ، LL=${ll.toFixed(1)}% ، NP — Fine-grained.`};
+    }
     if(isNaN(ll)||isNaN(pl)) return {symbol:'—',name:'أدخل LL و PL',detail:'لازم تدخل LL و PL للتربة الناعمة.'};
     if(pl>=ll) return {symbol:'⚠️',name:'بيانات غير منطقية',detail:'PL أكبر من أو يساوي LL.'};
     const pi=ll-pl, aLine=0.73*(ll-20);
@@ -1588,11 +1747,15 @@ function s1_classifySoil(){
   const fines=p200;
   const gt=(!isNaN(p4)&&(p4-fines)<(50-fines))?'G':'S';
   let fs='M';
-  if(!isNaN(ll)&&!isNaN(pl)&&pl<ll){const pi=ll-pl,aL=0.73*(ll-20);fs=pi>aL?'C':'M';}
+  if(isNP){
+    fs='M'; // Non-plastic → M-type per ASTM D2487
+  } else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll){const pi=ll-pl,aL=0.73*(ll-20);fs=pi>aL?'C':'M';}
   const cuA=!isNaN(_s1Cu)&&isFinite(_s1Cu), ccA=!isNaN(_s1Cc)&&isFinite(_s1Cc);
   const wg=cuA&&ccA&&(gt==='G'?(_s1Cu>=4&&_s1Cc>=1&&_s1Cc<=3):(_s1Cu>=6&&_s1Cc>=1&&_s1Cc<=3));
   let dtl=`% مار No.200=${fines.toFixed(1)}% ، % مار No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
   if(cuA) dtl+=` ، Cᵤ=${_s1Cu.toFixed(2)}`; if(ccA) dtl+=` ، Cc=${_s1Cc.toFixed(2)}`;
+  if(isNP) dtl+=' ، NP (غير لدنة → M-type)';
+  else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll) dtl+=` ، PI=${(ll-pl).toFixed(1)}%`;
   if(fines<5){
     if(!cuA||!ccA) return {symbol:gt+'?',name:`${gt==='G'?'Gravel':'Sand'} — يلزم Cu و Cc`,detail:dtl};
     const sym=wg?gt+'W':gt+'P';
@@ -1624,6 +1787,23 @@ function s1_runClassification(){
     box.innerHTML=`<div class="class-badge" style="background:${bg};font-size:${fs}">${res.symbol}</div><div class="class-name" style="margin-top:8px">${res.name}</div>`;
   }
   if(det) det.textContent=res.detail;
+  /* AASHTO */
+  const ll=parseFloat(document.getElementById('s1_ll')?.value);
+  const pl=parseFloat(document.getElementById('s1_pl')?.value);
+  const isNP=(document.getElementById('s1_plasticityFlag')?.value||'auto')==='no';
+  const ar=classifyAASHTO(s1_getCombinedPassing,ll,pl,isNP);
+  const abox=document.getElementById('s1_aashtoResultBox');
+  const adet=document.getElementById('s1_aashtoDetail');
+  if(abox){
+    if(ar.symbol==='—'){
+      abox.innerHTML=`<div class="class-empty">${ar.detail}</div>`;
+    } else {
+      const fs=ar.symbol.length>6?'13px':'20px';
+      abox.innerHTML=`<div class="class-badge" style="background:#8B4500;font-size:${fs}">${ar.symbol}</div><div class="class-name" style="margin-top:8px;color:#8B4500">${ar.name}</div><div style="font-size:11px;color:#555;margin-top:4px">GI = ${ar.gi}</div>`;
+    }
+  }
+  if(adet) adet.textContent=ar.detail+(ar.use?' — '+ar.use:'');
+  if(!isEmpty) renderClassTable(res,ar,'s1_classTableBody');
 }
 
 function s1_renderChart(){
