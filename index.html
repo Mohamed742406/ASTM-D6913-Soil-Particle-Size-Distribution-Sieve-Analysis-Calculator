@@ -77,7 +77,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
 </head>
 <body>
 <header>
-  <h1>🔬 ASTM D6913-17 | Composite Sieving – Double Separation | فصل مركب بفصلين</h1>
+  <h1>🔬 ASTM D6913-17 | Composite Sieving | نخل مركب — فصل واحد وفصلين</h1>
   <p>Method A — يحسب 1stCSCF و 2ndCSCF والنتائج المجمعة تلقائياً</p>
   <button class="guide-btn" onclick="document.getElementById('guideModal').style.display='flex'">📖 دليل الاستخدام والحسابات</button>
 </header>
@@ -89,6 +89,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
     <div class="tab-nav">
       <button id="btn_project" class="gtab active" onclick="switchMainTab('project')">📁 بيانات المشروع</button>
       <button id="btn_test"    class="gtab"        onclick="switchMainTab('test')">🧪 بيانات الاختبار</button>
+      <button id="btn_single"  class="gtab"        onclick="switchMainTab('single')">🔩 فصل واحد (Single Sep.)</button>
       <button id="btn_report"  class="gtab"        onclick="switchMainTab('report')">🖨️ التقرير</button>
     </div>
   </div>
@@ -143,20 +144,43 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
       <div class="card-header bg-purple">📋 البيانات المدخلة / Input Parameters</div>
       <div class="card-body">
         <div class="params-grid">
-          <div class="param-box input-yellow"><label>Sep.1 — منخل الفصل الأول (mm)</label><input type="number" id="sep1" value="9.5" step="0.1" onchange="calculate()"></div>
-          <div class="param-box input-yellow"><label>Sep.2 — منخل الفصل الثاني (mm)</label><input type="number" id="sep2" value="19" step="0.1" onchange="calculate()"></div>
-          <div class="param-box input-yellow"><label>wfp (%) — محتوى الرطوبة</label><input type="number" id="wfp" value="2" step="0.1" onchange="calculate()"></div>
-          <div class="param-box input-yellow"><label>FP,Mm (جم) — وزن الجزء الناعم الرطب</label><input type="number" id="fpmm" value="9999" onchange="calculate()"></div>
-          <div class="param-box input-yellow"><label>1stCP,Md (جم) — وزن الجزء الخشن الأول الجاف</label><input type="number" id="cp1md" value="1000" onchange="calculate()"></div>
-          <div class="param-box input-green"><label>FP,Md (جم) — محسوب</label><div class="calc-val" id="fpmd_disp">—</div></div>
+          <div class="param-box input-yellow">
+            <label>Sep.1 — منخل الفصل الأول (الأخشن — يُطبَّق على العينة الكاملة)</label>
+            <select id="sep1" onchange="d2_onSepChange()" style="width:100%;border:1.5px solid #ccc;border-radius:4px;padding:5px;text-align:center;font-size:13px;font-weight:700;background:#fffde7">
+              <option value="19" selected>¾&quot; — 19.0 mm</option>
+              <option value="25">1&quot; — 25.0 mm</option>
+              <option value="37.5">1½&quot; — 37.5 mm</option>
+              <option value="50">2&quot; — 50.0 mm</option>
+              <option value="63">2½&quot; — 63.0 mm</option>
+              <option value="75">3&quot; — 75.0 mm</option>
+            </select>
+          </div>
+          <div class="param-box input-yellow">
+            <label>Sep.2 — منخل الفصل الثاني (الأدق — يُطبَّق على 1stSubS)</label>
+            <select id="sep2" onchange="d2_onSepChange()" style="width:100%;border:1.5px solid #ccc;border-radius:4px;padding:5px;text-align:center;font-size:13px;font-weight:700;background:#fffde7">
+              <option value="4.75">No.4 — 4.75 mm</option>
+              <option value="9.5" selected>⅜&quot; — 9.5 mm</option>
+              <option value="19">¾&quot; — 19.0 mm</option>
+            </select>
+          </div>
+          <!-- 1stCP wet → dry -->
+          <div class="param-box input-yellow"><label>1stCP,Mm (جم) — وزن الجزء الخشن الرطب</label><input type="number" id="cp1mm" step="0.1" onchange="calculate()" placeholder="وزن رطب"></div>
+          <div class="param-box input-yellow"><label>w_CP (%) — رطوبة عينة الخشن</label><input type="number" id="wcp" step="0.1" onchange="calculate()" placeholder="% رطوبة"></div>
+          <div class="param-box input-green"><label>1stCP,Md (جم) — محسوب جاف</label><div class="calc-val" id="cp1md_disp">—</div><input type="hidden" id="cp1md" value="0"></div>
+          <!-- FP wet → dry -->
+          <div class="param-box input-yellow"><label>FP,Mm (جم) — وزن الجزء الناعم الرطب</label><input type="number" id="fpmm" step="0.1" onchange="calculate()" placeholder="وزن رطب"></div>
+          <div class="param-box input-yellow"><label>w_FP (%) — رطوبة الجزء الناعم</label><input type="number" id="wfp" step="0.1" onchange="calculate()" placeholder="% رطوبة"></div>
+          <div class="param-box input-green"><label>FP,Md (جم) — محسوب جاف</label><div class="calc-val" id="fpmd_disp">—</div></div>
           <div class="param-box input-green"><label>S,Md (جم) — المجموع الكلي الجاف</label><div class="calc-val" id="smd_disp">—</div></div>
-          <div class="param-box input-blue"><label>1stSubS,Md (جم)</label><input type="number" id="subs1md" value="1500" onchange="calculate()"></div>
-          <div class="param-box input-blue"><label>2ndSubS,Md (جم)</label><input type="number" id="subs2md" value="500" onchange="calculate()"></div>
+          <div class="param-box input-yellow"><label>1stSubS,Mm (جم) — وزن رطب</label><input type="number" id="subs1mm" value="" step="0.1" onchange="calculate()" placeholder="أدخل الوزن الرطب"></div>
+          <div class="param-box input-yellow"><label>w₁ (%) — رطوبة 1stSubS</label><input type="number" id="subs1w" value="" step="0.1" onchange="calculate()" placeholder="% رطوبة"></div>
+          <div class="param-box input-green"><label>1stSubS,Md (جم) — محسوب جاف</label><div class="calc-val" id="subs1md_disp">—</div><input type="hidden" id="subs1md" value="0"></div>
+
         </div>
         <div class="cscf-bar">
-          <div class="cscf-item"><span>1stCSCF</span><strong id="cscf1_val">—</strong></div>
+          <div class="cscf-item"><span>1stCSCF (عند Sep.1)</span><strong id="cscf1_val">—</strong></div>
           <div style="font-size:20px;color:#aaa">→</div>
-          <div class="cscf-item"><span>2ndCSCF</span><strong id="cscf2_val">—</strong></div>
+          <div class="cscf-item"><span>2ndCSCF (عند Sep.2)</span><strong id="cscf2_val">—</strong></div>
           <div style="font-size:20px;color:#aaa">→</div>
           <div class="cscf-item"><span>CF_FP2</span><strong id="cffp2_val">—</strong></div>
         </div>
@@ -166,26 +190,33 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
     <!-- Sieve Tables -->
     <div class="two-col">
       <div class="card">
-        <div class="card-header bg-green">🪨 1stCP — الجزء الخشن الأول (&gt; Sep.2 = 19mm)</div>
+        <div class="card-header bg-green" id="d2_cp_header">🪨 1stCP — الجزء الخشن الأول (≥ Sep.2 = ¾" = 19mm)</div>
         <div class="card-body">
           <table><thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>محجوز تراكمي (جم)</th><th>% مار</th></tr></thead><tbody>
-            <tr><td>3"</td><td>75.0</td><td class="td-input"><input type="number" id="cp_75" value="0" onchange="calculate()"></td><td id="p_cp_75">—</td></tr>
-            <tr><td>2½"</td><td>63.0</td><td class="td-input"><input type="number" id="cp_63" value="0" onchange="calculate()"></td><td id="p_cp_63">—</td></tr>
-            <tr><td>2"</td><td>50.0</td><td class="td-input"><input type="number" id="cp_50" value="0" onchange="calculate()"></td><td id="p_cp_50">—</td></tr>
-            <tr><td>1½"</td><td>37.5</td><td class="td-input"><input type="number" id="cp_375" value="0" onchange="calculate()"></td><td id="p_cp_375">—</td></tr>
-            <tr><td>1"</td><td>25.0</td><td class="td-input"><input type="number" id="cp_25" value="500" onchange="calculate()"></td><td id="p_cp_25">—</td></tr>
-            <tr style="background:#f3e5ff"><td><b>¾" (Sep.2)</b></td><td><b>19.0</b></td><td class="td-input"><input type="number" id="cp_19" value="1000" onchange="calculate()"></td><td id="p_cp_19">—</td></tr>
+            <tr id="d2cpr75"><td>3"</td><td>75.0</td><td class="td-input"><input type="number" id="cp_75" value="0" onchange="calculate()"></td><td id="p_cp_75">—</td></tr>
+            <tr id="d2cpr63"><td>2½"</td><td>63.0</td><td class="td-input"><input type="number" id="cp_63" value="0" onchange="calculate()"></td><td id="p_cp_63">—</td></tr>
+            <tr id="d2cpr50"><td>2"</td><td>50.0</td><td class="td-input"><input type="number" id="cp_50" value="0" onchange="calculate()"></td><td id="p_cp_50">—</td></tr>
+            <tr id="d2cpr375"><td>1½"</td><td>37.5</td><td class="td-input"><input type="number" id="cp_375" value="0" onchange="calculate()"></td><td id="p_cp_375">—</td></tr>
+            <tr id="d2cpr25"><td>1"</td><td>25.0</td><td class="td-input"><input type="number" id="cp_25" value="0" onchange="calculate()"></td><td id="p_cp_25">—</td></tr>
+            <tr id="d2cpr19" style="background:#f3e5ff"><td id="d2cpr19_lbl"><b>¾" (Sep.2)</b></td><td id="d2cpr19_mm"><b>19.0</b></td><td class="td-input"><input type="number" id="cp_19" value="0" onchange="calculate()"></td><td id="p_cp_19">—</td></tr>
           </tbody></table>
+          <div style="margin-top:8px;font-size:11px;color:#555;background:#e8f5e9;border-radius:6px;padding:6px 10px">الصف المميز بالبنفسجي هو منخل الفصل Sep.2. الصفوف التي فوقه تُخفى تلقائياً عند تغيير Sep.2.</div>
         </div>
       </div>
       <div class="card">
-        <div class="card-header bg-blue">🔵 1stSubS — العينة الفرعية الأولى (9.5mm ↔ 19mm)</div>
+        <div class="card-header bg-blue" id="d2_ss1_header">🔵 1stSubS — العينة الفرعية الأولى (Sep.1=9.5mm ↔ Sep.2=19mm)</div>
         <div class="card-body">
           <table><thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>محجوز تراكمي (جم)</th><th>% مار</th></tr></thead><tbody>
-            <tr><td>¾"</td><td>19.0</td><td class="td-input"><input type="number" id="ss1_19" value="0" onchange="calculate()"></td><td id="p_ss1_19">—</td></tr>
-            <tr style="background:#f3e5ff"><td><b>⅜" (Sep.1)</b></td><td><b>9.5</b></td><td class="td-input"><input type="number" id="ss1_95" value="500" onchange="calculate()"></td><td id="p_ss1_95">—</td></tr>
+            <tr id="d2ss1r75" style="display:none"><td>3"</td><td>75.0</td><td class="td-input"><input type="number" id="ss1_75" value="0" onchange="calculate()"></td><td id="p_ss1_75">—</td></tr>
+            <tr id="d2ss1r63" style="display:none"><td>2½"</td><td>63.0</td><td class="td-input"><input type="number" id="ss1_63" value="0" onchange="calculate()"></td><td id="p_ss1_63">—</td></tr>
+            <tr id="d2ss1r50" style="display:none"><td>2"</td><td>50.0</td><td class="td-input"><input type="number" id="ss1_50" value="0" onchange="calculate()"></td><td id="p_ss1_50">—</td></tr>
+            <tr id="d2ss1r375" style="display:none"><td>1½"</td><td>37.5</td><td class="td-input"><input type="number" id="ss1_375" value="0" onchange="calculate()"></td><td id="p_ss1_375">—</td></tr>
+            <tr id="d2ss1r25" style="display:none"><td>1"</td><td>25.0</td><td class="td-input"><input type="number" id="ss1_25" value="0" onchange="calculate()"></td><td id="p_ss1_25">—</td></tr>
+            <tr id="d2ss1r19" style="background:#fff3e0"><td id="d2ss1r19_lbl">¾" (Sep.2 — check)</td><td>19.0</td><td class="td-input"><input type="number" id="ss1_19" value="0" onchange="calculate()"></td><td id="p_ss1_19">—</td></tr>
+            <tr id="d2ss1r95" style="background:#f3e5ff"><td id="d2ss1r95_lbl"><b>⅜" (Sep.1)</b></td><td id="d2ss1r95_mm"><b>9.5</b></td><td class="td-input"><input type="number" id="ss1_95" value="0" onchange="calculate()"></td><td id="p_ss1_95">—</td></tr>
+            <tr id="d2ss1r475" style="display:none;background:#f3e5ff"><td id="d2ss1r475_lbl"><b>No.4 (Sep.1)</b></td><td>4.75</td><td class="td-input"><input type="number" id="ss1_475" value="0" onchange="calculate()"></td><td id="p_ss1_475">—</td></tr>
           </tbody></table>
-          <div style="margin-top:10px;background:#fff3e0;border-radius:6px;padding:8px;font-size:11px;color:#8B4500"><b>ملاحظة:</b> لو ظهر فقد غسيل أو محجوز على أول منخل في أي set، لازم تراجع شرط 0.5% و 2% حسب المواصفة.</div>
+          <div style="margin-top:10px;background:#fff3e0;border-radius:6px;padding:8px;font-size:11px;color:#8B4500"><b>ملاحظة:</b> صف Sep.2 (check) يجب ألا يتجاوز 0.5% من SubS1. الصف المميز بالبنفسجي هو Sep.1.</div>
         </div>
       </div>
     </div>
@@ -194,20 +225,54 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
     <div class="card">
       <div class="card-header bg-purple">🔬 2ndSubS — الجزء الناعم (&lt; Sep.1 = 9.5mm)</div>
       <div class="card-body">
+
+        <!-- Step 1: wash inputs -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;background:#fff3e0;border-radius:8px;padding:10px 14px">
+          <div style="grid-column:1/-1;font-size:11px;font-weight:700;color:#8B4500;margin-bottom:4px">🚿 الخطوة 1 — الغسيل على No.200 قبل النخل</div>
+          <!-- SubS2 entered directly as dry weight -->
+          <div class="param-box input-yellow"><label>2ndSubS,Md (جم) — وزن جاف قبل الغسيل</label><input type="number" id="subs2md_input" step="0.1" onchange="calculate()" placeholder="وزن جاف"><input type="hidden" id="subs2md" value="0"></div>
+          <!-- Washed dry weight -->
+          <div class="param-box input-yellow"><label>وزن بعد الغسيل والتجفيف (جم)</label><input type="number" id="ss2_washed_md" step="0.1" onchange="calculate()" placeholder="الوزن الجاف بعد الغسيل"></div>
+        </div>
+
+        <!-- Wash loss summary -->
+        <div id="wash_loss_bar" style="display:none;margin-bottom:12px;background:#fce4ec;border-radius:8px;padding:10px 14px;display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+          <div style="text-align:center">
+            <div style="font-size:10px;color:#8B4500;font-weight:700">فاقد الغسيل</div>
+            <div id="wash_loss_disp" style="font-size:16px;font-weight:900;color:#c62828">—</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:10px;color:#8B4500;font-weight:700">% الفاقد من SubS2</div>
+            <div id="wash_loss_pct" style="font-size:16px;font-weight:900;color:#c62828">—</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:10px;color:#555;font-weight:700">مجموع المحجوز على المناخل</div>
+            <div id="sieve_sum_disp" style="font-size:16px;font-weight:900;color:#1A3A6B">—</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:10px;color:#555;font-weight:700">فرق المحجوز vs وزن بعد الغسيل</div>
+            <div id="sieve_check_disp" style="font-size:14px;font-weight:700">—</div>
+          </div>
+          <div id="wash_loss_note" style="flex:1;min-width:200px;font-size:11px;font-weight:700;padding:6px 10px;border-radius:6px"></div>
+        </div>
+
+        <!-- Step 2: sieve table — FCMR relative to washed dry weight -->
+        <div style="font-size:11px;font-weight:700;color:#5B2D8E;margin-bottom:6px">🔩 الخطوة 2 — النخل الجاف بعد الغسيل (FCMR بالنسبة لوزن بعد الغسيل)</div>
         <div class="two-col">
           <table><thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>FCMR (جم)</th><th>% مار جزئي</th></tr></thead><tbody>
-            <tr><td>⅜"</td><td>9.5</td><td class="td-input"><input type="number" id="ss2_95" value="0" onchange="calculate()"></td><td id="fp_95">—</td></tr>
-            <tr><td>No.4</td><td>4.75</td><td class="td-input"><input type="number" id="ss2_475" value="155" onchange="calculate()"></td><td id="fp_475">—</td></tr>
-            <tr><td>No.10</td><td>2.00</td><td class="td-input"><input type="number" id="ss2_2" value="252" onchange="calculate()"></td><td id="fp_2">—</td></tr>
-            <tr><td>No.40</td><td>0.425</td><td class="td-input"><input type="number" id="ss2_0425" value="352" onchange="calculate()"></td><td id="fp_0425">—</td></tr>
-            <tr><td>No.100</td><td>0.150</td><td class="td-input"><input type="number" id="ss2_015" value="385" onchange="calculate()"></td><td id="fp_015">—</td></tr>
-            <tr><td>No.200</td><td>0.075</td><td class="td-input"><input type="number" id="ss2_0075" value="415" onchange="calculate()"></td><td id="fp_0075">—</td></tr>
+            <tr id="d2ss2r95" style="background:#f3e5ff"><td id="d2ss2r95_lbl"><b>⅜" (Sep.1)</b></td><td>9.5</td><td class="td-input"><input type="number" id="ss2_95" value="0" onchange="calculate()"></td><td id="fp_95">—</td></tr>
+            <tr id="d2ss2r475"><td id="d2ss2r475_lbl">No.4</td><td>4.75</td><td class="td-input"><input type="number" id="ss2_475" value="0" onchange="calculate()"></td><td id="fp_475">—</td></tr>
+            <tr id="d2ss2r2"><td>No.10</td><td>2.00</td><td class="td-input"><input type="number" id="ss2_2" value="0" onchange="calculate()"></td><td id="fp_2">—</td></tr>
+            <tr id="d2ss2r0425"><td>No.40</td><td>0.425</td><td class="td-input"><input type="number" id="ss2_0425" value="0" onchange="calculate()"></td><td id="fp_0425">—</td></tr>
+            <tr id="d2ss2r015"><td>No.100</td><td>0.150</td><td class="td-input"><input type="number" id="ss2_015" value="0" onchange="calculate()"></td><td id="fp_015">—</td></tr>
+            <tr id="d2ss2r0075"><td>No.200</td><td>0.075</td><td class="td-input"><input type="number" id="ss2_0075" value="0" onchange="calculate()"></td><td id="fp_0075">—</td></tr>
           </tbody></table>
           <div style="background:#f3e5ff;border-radius:6px;padding:12px;font-size:12px">
             <p style="font-weight:700;color:#5B2D8E;margin-bottom:8px">📐 المعادلات</p>
-            <p><b>% مار جزئي</b> = (1 − FCMR / 2ndSubS,Md) × 100</p><br>
-            <p><b>% مار مجمع</b> = 2ndCSCF × (1 − FCMR / 2ndSubS,Md)</p><br>
-            <p style="color:#8B4500"><b>2ndCSCF</b> = 1stCSCF × (1 − FCMR@Sep.1 / 1stSubS,Md)</p>
+            <p><b>% مار جزئي</b> = (1 − FCMR / <b>SubS2,washed</b>) × 100</p><br>
+            <p><b>% مار مجمع</b> = 2ndCSCF × (1 − FCMR / SubS2,washed)</p><br>
+            <p style="color:#8B4500"><b>2ndCSCF</b> = 1stCSCF × (1 − FCMR@Sep.2 / 1stSubS,Md)</p><br>
+            <p style="color:#c62828"><b>SubS2,washed</b> = وزن بعد الغسيل والتجفيف<br>لو مش مدخول → يستخدم SubS2,Md</p>
           </div>
         </div>
       </div>
@@ -257,11 +322,11 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
               <div>
                 <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Liquid Limit, LL (%)</label>
-                <input type="number" id="ll" value="" onchange="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
+                <input type="number" id="ll" value="" oninput="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
               </div>
               <div>
                 <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plastic Limit, PL (%)</label>
-                <input type="number" id="pl" value="" onchange="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
+                <input type="number" id="pl" value="" oninput="runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px">
               </div>
             </div>
             <div style="margin-top:10px">
@@ -279,19 +344,241 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
           <div class="seg" style="background:#f3e5ff">
             <b style="color:#5B2D8E">نتيجة التصنيف / Classification Result</b>
             <div id="classResultBox" style="margin-top:14px">
-              <div class="class-empty">أدخل LL و PL وشغّل الحساب للحصول على التصنيف.</div>
+              <div class="class-empty">أدخل البيانات واضغط "احسب النتائج".</div>
             </div>
             <div style="margin-top:12px;background:#fff;border-radius:6px;padding:10px;font-size:11px;color:#555;border:1px solid #e0c0ff">
-              <b>المدخلات المستخدمة للتصنيف:</b><br>
+              <b>تفاصيل التصنيف:</b><br>
               <span id="classInputsUsed">لم يتم الحساب بعد.</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Cu / Cc / D values bar -->
+        <div style="background:#e8f5e9;border-radius:8px;padding:12px 16px;margin-top:12px">
+          <div style="font-size:11px;font-weight:700;color:#1F6B3A;margin-bottom:10px">📐 معاملات التدرج / Gradation Coefficients — تُحسب تلقائياً من منحنى التدرج</div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+            <div class="param-box input-green"><label>D₁₀ (mm)</label><div class="calc-val" id="d10_val">—</div></div>
+            <div class="param-box input-green"><label>D₃₀ (mm)</label><div class="calc-val" id="d30_val">—</div></div>
+            <div class="param-box input-green"><label>D₆₀ (mm)</label><div class="calc-val" id="d60_val">—</div></div>
+            <div class="param-box" style="background:#fff9c4"><label>Cᵤ = D₆₀/D₁₀</label><div class="calc-val" id="cu_val" style="border-color:#f9a825;color:#8B4500">—</div></div>
+            <div class="param-box" style="background:#fff9c4"><label>Cc = D₃₀²/(D₆₀×D₁₀)</label><div class="calc-val" id="cc_val" style="border-color:#f9a825;color:#8B4500">—</div></div>
+            <div class="param-box input-blue"><label>تحقق GW/SW</label><div class="calc-val" id="cucc_check" style="font-size:11px;color:#1A3A6B">—</div></div>
+          </div>
+          <div style="font-size:10px;color:#666;margin-top:8px">
+            GW: Cᵤ ≥ 4 و 1 ≤ Cc ≤ 3 | SW: Cᵤ ≥ 6 و 1 ≤ Cc ≤ 3 | بقيتها GP أو SP
           </div>
         </div>
       </div>
     </div>
 
   </div>
+
   <!-- END TAB 2 -->
+
+  <!-- ═══════════════════════════════════════════
+       TAB 4 — فصل واحد / Single Separation
+  ═══════════════════════════════════════════ -->
+  <div id="tab_single" class="main-tab-section">
+
+    <!-- جدول اختيار منخل الفصل -->
+    <div class="card">
+      <div class="card-header bg-orange">📐 جدول اختيار منخل الفصل / Separation Sieve Selection — ASTM D6913-17 Table 1</div>
+      <div class="card-body">
+        <div style="font-size:11px;color:#555;margin-bottom:10px">اختر منخل الفصل (Sep) بناءً على أكبر حجم حبة في العينة. الجدول مرجعي — القيم من المواصفة.</div>
+        <table>
+          <thead>
+            <tr>
+              <th>أكبر حبة في العينة<br>Max Particle Size</th>
+              <th>منخل الفصل الموصى<br>Recommended Sep</th>
+              <th>مقاس Sep (mm)</th>
+              <th>أدنى وزن العينة الكلية (جم)<br>Min S,Md</th>
+              <th>أدنى وزن العينة الفرعية (جم)<br>Min SubS,Md</th>
+              <th>ملاحظة</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#e8f5e9"><td><b>≤ 19 mm (¾")</b></td><td>⅜" / No.4</td><td>9.5 / 4.75</td><td>≥ 1,300</td><td>≥ 200</td><td>الاختيار الأكثر شيوعاً</td></tr>
+            <tr><td><b>≤ 25.4 mm (1")</b></td><td>¾" (19mm)</td><td>19.0</td><td>≥ 3,000</td><td>≥ 500</td><td></td></tr>
+            <tr style="background:#e8f5e9"><td><b>≤ 38.1 mm (1½")</b></td><td>¾" (19mm)</td><td>19.0</td><td>≥ 10,000</td><td>≥ 1,000</td><td></td></tr>
+            <tr><td><b>≤ 50.8 mm (2")</b></td><td>¾" (19mm)</td><td>19.0</td><td>≥ 25,000</td><td>≥ 1,500</td><td></td></tr>
+            <tr style="background:#e8f5e9"><td><b>≤ 76.2 mm (3")</b></td><td>1½" (38.1mm)</td><td>38.1</td><td>≥ 70,000</td><td>≥ 3,000</td><td>عينة كبيرة — يُفضّل فصلين</td></tr>
+            <tr><td colspan="6" style="background:#fff9c4;font-size:11px;color:#8B4500;text-align:right;padding:8px">
+              ⚠️ تحقق دائماً من المواصفة الأصلية ASTM D6913-17 Table 1 لأي تحديثات. المحجوز على أول منخل في SubS يجب ألا يتجاوز 0.5% من SubS,Md (وإلا يلزم مراجعة التقسيم).
+            </td></tr>
+            <tr style="background:#e3f2fd">
+              <td colspan="3" style="font-weight:700;color:#1A3A6B">معادلة CSCF (عامل تصحيح الفصل)</td>
+              <td colspan="3" style="font-size:12px;text-align:right">
+                <b>CSCF = (1 − CP,CMR@Sep ÷ S,Md) × 100</b><br>
+                <span style="font-size:10px;color:#555">% مار مجمع عند أي منخل N = CSCF × (1 − SubS,FCMR_N ÷ SubS,Md)</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Input Parameters -->
+    <div class="card">
+      <div class="card-header bg-purple">📋 البيانات المدخلة — فصل واحد / Input Parameters — Single Separation</div>
+      <div class="card-body">
+        <div class="params-grid">
+          <div class="param-box input-yellow">
+            <label>Sep — منخل الفصل (mm)</label>
+            <select id="s1_sep" onchange="s1_onSepChange()" style="width:100%;border:1.5px solid #ccc;border-radius:4px;padding:5px;text-align:center;font-size:13px;font-weight:700;background:#fffde7">
+              <option value="75">3&quot; — 75.0 mm</option>
+              <option value="63">2½&quot; — 63.0 mm</option>
+              <option value="50">2&quot; — 50.0 mm</option>
+              <option value="37.5">1½&quot; — 37.5 mm</option>
+              <option value="25">1&quot; — 25.0 mm</option>
+              <option value="19" selected>¾&quot; — 19.0 mm</option>
+              <option value="9.5">⅜&quot; — 9.5 mm</option>
+              <option value="4.75">No.4 — 4.75 mm</option>
+              <option value="2">No.10 — 2.00 mm</option>
+            </select>
+          </div>
+          <div class="param-box input-yellow"><label>wfp (%) — محتوى الرطوبة</label><input type="number" id="s1_wfp" value="0" step="0.1" onchange="s1_calculate()"></div>
+          <div class="param-box input-yellow"><label>FP,Mm (جم) — وزن الجزء الناعم الرطب</label><input type="number" id="s1_fpmm" onchange="s1_calculate()"></div>
+          <div class="param-box input-yellow"><label>CP,Md (جم) — وزن الجزء الخشن الجاف</label><input type="number" id="s1_cpmd" onchange="s1_calculate()"></div>
+          <div class="param-box input-yellow"><label>SubS,Md (جم) — وزن العينة الفرعية الجاف</label><input type="number" id="s1_subsmd" onchange="s1_calculate()"></div>
+          <div class="param-box input-green"><label>FP,Md (جم) — محسوب</label><div class="calc-val" id="s1_fpmd_disp">—</div></div>
+          <div class="param-box input-green"><label>S,Md (جم) — المجموع الكلي الجاف</label><div class="calc-val" id="s1_smd_disp">—</div></div>
+          <div class="param-box" style="background:#f3e5ff"><label>CSCF (%)</label><div class="calc-val" id="s1_cscf_val" style="border-color:#9c5fc0;color:#5B2D8E;font-size:16px">—</div></div>
+        </div>
+        <div style="background:#fff3e0;border-radius:6px;padding:8px 12px;margin-top:10px;font-size:11px;color:#8B4500">
+          <b>ملاحظة:</b> لو وزن الجزء الناعم معروف جافاً مباشرة، أدخله في FP,Mm مع ضبط wfp = 0.
+        </div>
+      </div>
+    </div>
+
+    <!-- Sieve Tables -->
+    <div class="two-col">
+      <!-- CP table -->
+      <div class="card">
+        <div class="card-header bg-green" id="s1_cp_header">🪨 CP — الجزء الخشن المحجوز على Sep</div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>محجوز تراكمي (جم)</th><th>% مار</th></tr></thead>
+            <tbody id="s1_cp_body">
+              <tr><td>3"</td><td>75.0</td><td class="td-input"><input type="number" id="s1_cp_75" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_75">—</td></tr>
+              <tr><td>2½"</td><td>63.0</td><td class="td-input"><input type="number" id="s1_cp_63" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_63">—</td></tr>
+              <tr><td>2"</td><td>50.0</td><td class="td-input"><input type="number" id="s1_cp_50" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_50">—</td></tr>
+              <tr><td>1½"</td><td>37.5</td><td class="td-input"><input type="number" id="s1_cp_375" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_375">—</td></tr>
+              <tr><td>1"</td><td>25.0</td><td class="td-input"><input type="number" id="s1_cp_25" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_25">—</td></tr>
+              <tr id="s1_sep_row" style="background:#f3e5ff"><td id="s1_sep_lbl"><b>¾" (Sep)</b></td><td id="s1_sep_mm_td"><b>19.0</b></td><td class="td-input"><input type="number" id="s1_cp_sep" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_sep">—</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:8px;font-size:11px;color:#555;background:#e8f5e9;border-radius:6px;padding:6px 10px">
+            أدخل المحجوز التراكمي لكل منخل فوق Sep. المنخل الأخير هو Sep نفسه.
+          </div>
+        </div>
+      </div>
+
+      <!-- SubS table -->
+      <div class="card">
+        <div class="card-header bg-blue" id="s1_sub_header">🔬 SubS — العينة الفرعية (من Sep إلى No.200)</div>
+        <div class="card-body">
+          <table>
+            <thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>FCMR (جم)</th><th>% مار جزئي</th></tr></thead>
+            <tbody id="s1_sub_body">
+              <!-- dynamic rows based on Sep selection, plus fixed rows -->
+              <tr id="s1_sub_sep_row" style="background:#f3e5ff"><td id="s1_sub_sep_lbl"><b>¾" (Sep)</b></td><td id="s1_sub_sep_mm"><b>19.0</b></td><td class="td-input"><input type="number" id="s1_sub_sep" value="0" onchange="s1_calculate()"></td><td id="s1_fp_sep">—</td></tr>
+              <tr id="s1_sub_r95" ><td>⅜"</td><td>9.5</td><td class="td-input"><input type="number" id="s1_sub_95" value="0" onchange="s1_calculate()"></td><td id="s1_fp_95">—</td></tr>
+              <tr id="s1_sub_r475"><td>No.4</td><td>4.75</td><td class="td-input"><input type="number" id="s1_sub_475" value="0" onchange="s1_calculate()"></td><td id="s1_fp_475">—</td></tr>
+              <tr><td>No.10</td><td>2.00</td><td class="td-input"><input type="number" id="s1_sub_2" value="0" onchange="s1_calculate()"></td><td id="s1_fp_2">—</td></tr>
+              <tr><td>No.40</td><td>0.425</td><td class="td-input"><input type="number" id="s1_sub_0425" value="0" onchange="s1_calculate()"></td><td id="s1_fp_0425">—</td></tr>
+              <tr><td>No.100</td><td>0.150</td><td class="td-input"><input type="number" id="s1_sub_015" value="0" onchange="s1_calculate()"></td><td id="s1_fp_015">—</td></tr>
+              <tr><td>No.200</td><td>0.075</td><td class="td-input"><input type="number" id="s1_sub_0075" value="0" onchange="s1_calculate()"></td><td id="s1_fp_0075">—</td></tr>
+            </tbody>
+          </table>
+          <div style="background:#f3e5ff;border-radius:6px;padding:10px;font-size:11px;margin-top:8px">
+            <b style="color:#5B2D8E">% مار جزئي</b> = (1 − FCMR ÷ SubS,Md) × 100<br>
+            <b style="color:#5B2D8E">% مار مجمع</b> = CSCF × (1 − FCMR ÷ SubS,Md)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn-reset" onclick="s1_resetForm()">🔄 إعادة تعيين</button>
+      <button class="btn-calc" onclick="s1_calculate()">⚙️ احسب النتائج</button>
+    </div>
+    <div id="s1_status" style="text-align:center;padding:8px;border-radius:6px;font-weight:700;display:none;margin-bottom:10px"></div>
+
+    <!-- Results Table -->
+    <div class="card">
+      <div class="card-header bg-orange">📊 النتائج المجمعة — فصل واحد / Combined Results</div>
+      <div class="card-body">
+        <table>
+          <thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>CMR مجمع (جم)</th><th>% مار مجمع</th><th>شريط %</th><th>المعادلة</th></tr></thead>
+          <tbody id="s1_summaryBody"><tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card">
+      <div class="card-header bg-blue">📈 منحنى التدرج — فصل واحد</div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+          <div style="font-size:12px;color:#555">الرسم يُحدَّث تلقائياً عند الحساب.</div>
+          <button class="btn-calc" style="padding:8px 18px;font-size:13px" onclick="s1_renderChart()">📉 تحديث الرسم</button>
+        </div>
+        <div id="s1_gradChart" style="width:100%;height:420px"><div style="text-align:center;color:#888;padding:60px 20px;font-size:13px">أدخل البيانات واضغط "احسب النتائج"</div></div>
+      </div>
+    </div>
+
+    <!-- Classification -->
+    <div class="card">
+      <div class="card-header bg-orange">🏷️ التصنيف — فصل واحد / USCS Classification</div>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="seg" style="background:#e3f2fd">
+            <b style="color:#1A3A6B">حدّات أتربرج / Atterberg Limits</b>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+              <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Liquid Limit, LL (%)</label>
+                <input type="number" id="s1_ll" value="" oninput="s1_runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px"></div>
+              <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plastic Limit, PL (%)</label>
+                <input type="number" id="s1_pl" value="" oninput="s1_runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px"></div>
+            </div>
+            <div style="margin-top:10px">
+              <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">Plasticity</label>
+              <select id="s1_plasticityFlag" onchange="s1_runClassification()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px;background:#fff">
+                <option value="auto">تلقائي (Auto)</option>
+                <option value="no">Non Plastic (NP)</option>
+              </select>
+            </div>
+          </div>
+          <div class="seg" style="background:#f3e5ff">
+            <b style="color:#5B2D8E">نتيجة التصنيف / Result</b>
+            <div id="s1_classResultBox" style="margin-top:14px">
+              <div class="class-empty">أدخل البيانات واضغط "احسب النتائج".</div>
+            </div>
+            <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:11px;color:#555;border:1px solid #e0c0ff">
+              <span id="s1_classDetail">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cu / Cc bar -->
+        <div style="background:#e8f5e9;border-radius:8px;padding:12px 16px;margin-top:12px">
+          <div style="font-size:11px;font-weight:700;color:#1F6B3A;margin-bottom:10px">📐 معاملات التدرج — فصل واحد</div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+            <div class="param-box input-green"><label>D₁₀ (mm)</label><div class="calc-val" id="s1_d10_val">—</div></div>
+            <div class="param-box input-green"><label>D₃₀ (mm)</label><div class="calc-val" id="s1_d30_val">—</div></div>
+            <div class="param-box input-green"><label>D₆₀ (mm)</label><div class="calc-val" id="s1_d60_val">—</div></div>
+            <div class="param-box" style="background:#fff9c4"><label>Cᵤ = D₆₀/D₁₀</label><div class="calc-val" id="s1_cu_val" style="border-color:#f9a825;color:#8B4500">—</div></div>
+            <div class="param-box" style="background:#fff9c4"><label>Cc = D₃₀²/(D₆₀×D₁₀)</label><div class="calc-val" id="s1_cc_val" style="border-color:#f9a825;color:#8B4500">—</div></div>
+            <div class="param-box input-blue"><label>تحقق GW/SW</label><div class="calc-val" id="s1_cucc_check" style="font-size:11px;color:#1A3A6B">—</div></div>
+          </div>
+          <div style="font-size:10px;color:#666;margin-top:8px">GW: Cᵤ ≥ 4 و 1 ≤ Cc ≤ 3 | SW: Cᵤ ≥ 6 و 1 ≤ Cc ≤ 3</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- END TAB 4 (single) -->
+
 
 
   <!-- ═══════════════════════════════════════════
@@ -422,9 +709,11 @@ function showStatus(msg,ok){const el=document.getElementById('status');el.textCo
 
 /* ═══ Tab switching ═══ */
 function switchMainTab(name){
-  ['project','test','report'].forEach(t=>{
-    document.getElementById('tab_'+t).classList.toggle('active', t===name);
-    document.getElementById('btn_'+t).classList.toggle('active', t===name);
+  ['project','test','single','report'].forEach(t=>{
+    const sec=document.getElementById('tab_'+t);
+    const btn=document.getElementById('btn_'+t);
+    if(sec) sec.classList.toggle('active', t===name);
+    if(btn) btn.classList.toggle('active', t===name);
   });
   if(name==='report'){syncReport();updateReportTable();updateReportChart();}
 }
@@ -438,7 +727,38 @@ function showGuideTab(id, btn){
 
 /* ═══ Main calculate ═══ */
 function calculate(){
-  const FP_Mm=v('fpmm'), wfp=v('wfp'), CP1_Md=v('cp1md'), SubS1=v('subs1md'), SubS2=v('subs2md');
+  /* 1stCP dry weight — from wet weight + moisture specimen */
+  const CP1Mm=parseFloat(document.getElementById('cp1mm').value);
+  const wcp  =parseFloat(document.getElementById('wcp').value);
+  let CP1_Md=0;
+  if(!isNaN(CP1Mm)&&CP1Mm>0&&!isNaN(wcp)&&wcp>=0){
+    CP1_Md=CP1Mm/(1+wcp/100);
+    document.getElementById('cp1md_disp').textContent=CP1_Md.toFixed(3)+' جم';
+    document.getElementById('cp1md').value=CP1_Md;
+  } else {
+    document.getElementById('cp1md_disp').textContent='—';
+    document.getElementById('cp1md').value=0;
+  }
+
+  const FP_Mm=v('fpmm'), wfp=v('wfp');
+
+  /* SubS1 dry weight — computed from wet weight + moisture */
+  const SubS1Mm=parseFloat(document.getElementById('subs1mm').value);
+  const SubS1w =parseFloat(document.getElementById('subs1w').value);
+  let SubS1=0;
+  if(!isNaN(SubS1Mm)&&SubS1Mm>0&&!isNaN(SubS1w)&&SubS1w>=0){
+    SubS1=SubS1Mm/(1+SubS1w/100);
+    document.getElementById('subs1md_disp').textContent=SubS1.toFixed(3)+' جم';
+    document.getElementById('subs1md').value=SubS1;
+  } else {
+    document.getElementById('subs1md_disp').textContent='—';
+    document.getElementById('subs1md').value=0;
+  }
+
+  /* SubS2 dry weight — entered directly */
+  const SubS2Raw=parseFloat(document.getElementById('subs2md_input').value);
+  const SubS2=(!isNaN(SubS2Raw)&&SubS2Raw>0)?SubS2Raw:0;
+  document.getElementById('subs2md').value=SubS2;
   const FP_Md=FP_Mm/(1+wfp/100);
   const S_Md=CP1_Md+FP_Md;
   document.getElementById('fpmd_disp').textContent=FP_Md?FP_Md.toFixed(3)+' جم':'—';
@@ -446,60 +766,169 @@ function calculate(){
 
   if(!S_Md){showStatus('أدخل البيانات الأساسية أولاً',false);return;}
 
+  /* ── Dynamic Sep lookups ── */
+  /* Sep.1=coarser (1st physical sep on whole sample), Sep.2=finer (2nd sep on 1stSubS) */
+  const sep1val=parseFloat(document.getElementById('sep1').value)||19;  // COARSER
+  const sep2val=parseFloat(document.getElementById('sep2').value)||9.5;  // FINER
+  const D2_CPID   ={75:'cp_75',63:'cp_63',50:'cp_50',37.5:'cp_375',25:'cp_25',19:'cp_19'};
+  const D2_SS1ID  ={75:'ss1_75',63:'ss1_63',50:'ss1_50',37.5:'ss1_375',25:'ss1_25',19:'ss1_19',9.5:'ss1_95',4.75:'ss1_475'};
+  const D2_SS1PID ={75:'p_ss1_75',63:'p_ss1_63',50:'p_ss1_50',37.5:'p_ss1_375',25:'p_ss1_25',19:'p_ss1_19',9.5:'p_ss1_95',4.75:'p_ss1_475'};
+  const D2_LBLS   ={75:'3"',63:'2½"',50:'2"',37.5:'1½"',25:'1"',19:'¾"',9.5:'⅜"',4.75:'No.4',2:'No.10',0.425:'No.40',0.15:'No.100',0.075:'No.200'};
+  const D2_ALL    =[75,63,50,37.5,25,19,9.5,4.75,2,0.425,0.15,0.075];
+
   const cp={75:v('cp_75'),63:v('cp_63'),50:v('cp_50'),37.5:v('cp_375'),25:v('cp_25'),19:v('cp_19')};
-  [['75',75],['63',63],['50',50],['375',37.5],['25',25],['19',19]].forEach(([k,m])=>{
-    document.getElementById('p_cp_'+k).textContent=fmtPct((1-cp[m]/S_Md)*100);
+
+  /* CP passing % — only for sieves >= sep2val */
+  const cpPassIDs={75:'p_cp_75',63:'p_cp_63',50:'p_cp_50',37.5:'p_cp_375',25:'p_cp_25',19:'p_cp_19'};
+  [75,63,50,37.5,25,19].forEach(m=>{
+    const el=document.getElementById(cpPassIDs[m]);
+    if(el) el.textContent=m>=sep1val?fmtPct((1-cp[m]/S_Md)*100):'—';
   });
 
-  const CSCF1=(1-cp[19]/S_Md)*100;
-  const ss1_19=v('ss1_19'), ss1_95=v('ss1_95');
-  document.getElementById('p_ss1_19').textContent=fmtPct(CSCF1*(1-ss1_19/SubS1));
-  const CSCF2=CSCF1*(1-ss1_95/SubS1);
-  document.getElementById('p_ss1_95').textContent=fmtPct(CSCF2);
+  const cpAtSep1=cp[sep1val]!==undefined?cp[sep1val]:v(D2_CPID[sep1val]||'cp_19');
+  const CSCF1=(1-cpAtSep1/S_Md)*100;
+
+  /* 1stSubS passing % — sieves between sep2val..sep1val
+     Iterate coarser→finer (descending mm) and cap each value so passing
+     never increases as sieve size decreases (monotonic constraint). */
+  let prevSS1Pass=CSCF1; /* upper bound = Sep.1 passing */
+  [75,63,50,37.5,25,19,9.5,4.75].forEach(mm=>{
+    const el=document.getElementById(D2_SS1PID[mm]);
+    if(!el) return;
+    if(mm>=sep2val&&mm<=sep1val){
+      const ssv=v(D2_SS1ID[mm]);
+      const rawPass=CSCF1*(1-ssv/SubS1);
+      const cappedPass=Math.min(rawPass, prevSS1Pass);
+      el.textContent=fmtPct(cappedPass);
+      prevSS1Pass=cappedPass;
+    } else el.textContent='—';
+  });
+
+  const ss1AtSep2=v(D2_SS1ID[sep2val]||'ss1_95');
+  const CSCF2=CSCF1*(1-ss1AtSep2/SubS1);
   document.getElementById('cscf1_val').textContent=fmtPct(CSCF1);
   document.getElementById('cscf2_val').textContent=fmtPct(CSCF2);
 
-  const FP1_Md=S_Md-cp[19];
-  const FP2_Md=(FP1_Md/SubS1)*(SubS1-ss1_95);
-  document.getElementById('cffp2_val').textContent=(SubS2?FP2_Md/SubS2:0).toFixed(4);
+  /* ── 2ndSubS effective weight for sieve calcs:
+       use washed+dried weight if entered, else fall back to SubS2,Md ── */
+  const ss2WashedEl=document.getElementById('ss2_washed_md');
+  const ss2WashedVal=ss2WashedEl?parseFloat(ss2WashedEl.value):NaN;
+  const SubS2eff=(!isNaN(ss2WashedVal)&&ss2WashedVal>0)?ss2WashedVal:SubS2;
+
+  const FP1_Md=S_Md-cpAtSep1;
+  const FP2_Md=(FP1_Md/SubS1)*(SubS1-ss1AtSep2);
+  document.getElementById('cffp2_val').textContent=(SubS2eff?FP2_Md/SubS2eff:0).toFixed(4);
+
+  /* ── Wash Loss display ── */
+  const washBar=document.getElementById('wash_loss_bar');
+  const washLossDisp=document.getElementById('wash_loss_disp');
+  const washLossPct =document.getElementById('wash_loss_pct');
+  const washLossNote=document.getElementById('wash_loss_note');
+  const sieveSumDisp=document.getElementById('sieve_sum_disp');
+  const sieveCheckDisp=document.getElementById('sieve_check_disp');
+
+  if(!isNaN(ss2WashedVal)&&ss2WashedVal>0&&SubS2>0){
+    if(washBar) washBar.style.display='flex';
+    const lossGm=SubS2-ss2WashedVal;
+    const lossPct=(lossGm/SubS2)*100;
+    if(washLossDisp) washLossDisp.textContent=lossGm.toFixed(2)+' جم';
+    if(washLossPct)  washLossPct.textContent=lossPct.toFixed(2)+'%';
+    /* sieve sum check */
+    const sieveSum=[v('ss2_95'),v('ss2_475'),v('ss2_2'),v('ss2_0425'),v('ss2_015'),v('ss2_0075')].reduce((a,b)=>a+b,0);
+    if(sieveSumDisp) sieveSumDisp.textContent=sieveSum.toFixed(2)+' جم';
+    const diff=sieveSum-ss2WashedVal;
+    if(sieveCheckDisp){
+      sieveCheckDisp.textContent=(diff>=0?'+':'')+diff.toFixed(2)+' جم';
+      sieveCheckDisp.style.color=Math.abs(diff)<0.5*ss2WashedVal/100?'#1F6B3A':'#c62828';
+    }
+    if(washLossNote){
+      const absDiff=Math.abs(diff/ss2WashedVal*100);
+      washLossNote.style.background=absDiff<0.3?'#e8f5e9':absDiff<1?'#fff3e0':'#ffebee';
+      washLossNote.style.color=absDiff<0.3?'#1F6B3A':absDiff<1?'#8B4500':'#c62828';
+      if(absDiff<0.3)      washLossNote.textContent='✅ مجموع المحجوز ≈ وزن بعد الغسيل — البيانات متسقة';
+      else if(absDiff<1)   washLossNote.textContent='⚠️ فرق < 1% — مقبول، تحقق من قراءة الميزان';
+      else                  washLossNote.textContent='❌ فرق > 1% — راجع أوزان المناخل أو وزن بعد الغسيل';
+    }
+  } else {
+    if(washBar) washBar.style.display='none';
+  }
 
   const fcmr={'9.5':v('ss2_95'),'4.75':v('ss2_475'),'2':v('ss2_2'),'0.425':v('ss2_0425'),'0.15':v('ss2_015'),'0.075':v('ss2_0075')};
   const partialIds={'9.5':'fp_95','4.75':'fp_475','2':'fp_2','0.425':'fp_0425','0.15':'fp_015','0.075':'fp_0075'};
+  /* % passing in 2ndSubS table — relative to SubS2eff (washed dry weight) */
   Object.keys(fcmr).forEach(k=>{
-    document.getElementById(partialIds[k]).textContent=fmtPct((1-fcmr[k]/SubS2)*100);
+    const el=document.getElementById(partialIds[k]);
+    if(el) el.textContent=fmtPct((1-fcmr[k]/SubS2eff)*100);
   });
 
-  /* Build summary rows — combined passing */
+  /* Build summary rows — fully dynamic */
   const labels={
     coarse:'CMR = 1stCP,CumRet → % مار = (1−CMR/S,Md)×100',
     sep2:'CMR@Sep.2 → 1stCSCF',
+    ss1mid:'CMR = 1stCP + (FP1/SubS1)×FCMR → CSCF1×(1−FCMR/SubS1)',
     sep1:'CMR = 1stCP + (FP1/SubS1)×FCMR@Sep.1 → 2ndCSCF',
-    fine:'CMR = 1stCP + (FP1/SubS1)×[FCMR@Sep.1 + FCMR×(SubS1−FCMR@Sep.1)/SubS2]'
+    fine:'CMR = 1stCP + (FP1/SubS1)×[ss1@Sep1 + FCMR×(SubS1−ss1@Sep1)/SubS2]'
   };
-  const rows=[
-    {lbl:'3"',   mm:75,    type:'coarse', cmr:cp[75]},
-    {lbl:'2½"',  mm:63,    type:'coarse', cmr:cp[63]},
-    {lbl:'2"',   mm:50,    type:'coarse', cmr:cp[50]},
-    {lbl:'1½"',  mm:37.5,  type:'coarse', cmr:cp[37.5]},
-    {lbl:'1"',   mm:25,    type:'coarse', cmr:cp[25]},
-    {lbl:'¾"',   mm:19,    type:'sep2',   cmr:cp[19]},
-    {lbl:'⅜"',   mm:9.5,   type:'sep1',   cmr:cp[19]+(FP1_Md/SubS1)*ss1_95},
-    {lbl:'No.4', mm:4.75,  type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['4.75']*(SubS1-ss1_95)/SubS2)},
-    {lbl:'No.10',mm:2,     type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['2']*(SubS1-ss1_95)/SubS2)},
-    {lbl:'No.40',mm:0.425, type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['0.425']*(SubS1-ss1_95)/SubS2)},
-    {lbl:'No.100',mm:0.15, type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['0.15']*(SubS1-ss1_95)/SubS2)},
-    {lbl:'No.200',mm:0.075,type:'fine',   cmr:cp[19]+(FP1_Md/SubS1)*(ss1_95+fcmr['0.075']*(SubS1-ss1_95)/SubS2)}
-  ];
+  const rows=[];
+  /* CP sieves ≥ sep1 (coarser) */
+  D2_ALL.filter(mm=>mm>=sep1val).forEach(mm=>{
+    const cmrV=cp[mm]!==undefined?cp[mm]:0;
+    rows.push({lbl:D2_LBLS[mm]+(mm===sep1val?' (Sep.1)':''),mm,type:mm===sep1val?'sep2':'coarse',cmr:cmrV});
+  });
+  /* 1stSubS intermediate sep2 < mm < sep1 */
+  D2_ALL.filter(mm=>mm>sep2val&&mm<sep1val).forEach(mm=>{
+    const ss1v=v(D2_SS1ID[mm]||'ss1_19');
+    /* CMR cannot be less than cpAtSep1 (monotonic: finer sieves retain ≥ coarser) */
+    const cmrRaw=cpAtSep1+(FP1_Md/SubS1)*ss1v;
+    rows.push({lbl:D2_LBLS[mm],mm,type:'ss1mid',cmr:Math.max(cmrRaw,cpAtSep1)});
+  });
+  /* Sep2 row (finer) */
+  const cmrSep2Raw=cpAtSep1+(FP1_Md/SubS1)*ss1AtSep2;
+  rows.push({lbl:D2_LBLS[sep2val]+' (Sep.2)',mm:sep2val,type:'sep1',cmr:Math.max(cmrSep2Raw,cpAtSep1)});
+  /* 2ndSubS sieves < sep2 (finer) */
+  /* Compute CMR at sep2 for bounding lower rows */
+  const cmrAtSep2=Math.max(cmrSep2Raw,cpAtSep1);
+  D2_ALL.filter(mm=>mm<sep2val).forEach(mm=>{
+    const fk=String(mm);
+    const cmrRaw=cpAtSep1+(FP1_Md/SubS1)*(ss1AtSep2+(fcmr[fk]||0)*(SubS1-ss1AtSep2)/SubS2eff);
+    /* CMR must be monotonically non-decreasing as sieve size decreases */
+    rows.push({lbl:D2_LBLS[mm],mm,type:'fine',cmr:Math.max(cmrRaw,cmrAtSep2)});
+  });
+
+  /* Enforce global monotonicity pass-through: sort rows descending by mm,
+     then ensure each row's CMR >= previous row's CMR */
+  let prevCmr=0;
+  rows.forEach(r=>{r.cmr=Math.max(r.cmr,prevCmr);prevCmr=r.cmr;});
 
   const body=document.getElementById('summaryBody');
   body.innerHTML='';
+  _gradData=[];
   rows.forEach(r=>{
-    const pp=(1-r.cmr/S_Md)*100;
+    const pp=Math.min((1-r.cmr/S_Md)*100, 100); /* passing % cannot exceed 100% */
     const tr=document.createElement('tr');
-    const cls=r.type==='fine'?'td-calc':(r.type==='sep1'?'td-sep':'td-pass');
+    const cls=(r.type==='fine'||r.type==='ss1mid')?'td-calc':r.type==='sep1'?'td-sep':'td-pass';
     tr.innerHTML=`<td><b>${r.lbl}</b></td><td>${r.mm}</td><td class="td-input">${fmt(r.cmr)}</td><td class="${cls}" data-mm="${r.mm}">${fmtPct(pp)}</td><td>${fmtPct(pp)}</td><td style="font-size:10px;color:#666;text-align:right">${labels[r.type]}</td>`;
     body.appendChild(tr);
+    if(!isNaN(pp)&&isFinite(pp)) _gradData.push({mm:r.mm,pass:pp});
   });
+
+  /* ── D10 / D30 / D60 / Cu / Cc ── */
+  _D10=interpolateDn(_gradData,10);
+  _D30=interpolateDn(_gradData,30);
+  _D60=interpolateDn(_gradData,60);
+  _Cu=(!isNaN(_D10)&&_D10>0)?_D60/_D10:NaN;
+  _Cc=(!isNaN(_D10)&&!isNaN(_D30)&&!isNaN(_D60)&&_D60>0&&_D10>0)?(_D30*_D30)/(_D60*_D10):NaN;
+  const fmt3=n=>(isNaN(n)||!isFinite(n))?'—':n.toFixed(3);
+  const fmt2c=n=>(isNaN(n)||!isFinite(n))?'—':n.toFixed(2);
+  document.getElementById('d10_val').textContent=fmt3(_D10);
+  document.getElementById('d30_val').textContent=fmt3(_D30);
+  document.getElementById('d60_val').textContent=fmt3(_D60);
+  document.getElementById('cu_val').textContent=fmt2c(_Cu);
+  document.getElementById('cc_val').textContent=fmt2c(_Cc);
+  const cuOkG=!isNaN(_Cu)&&_Cu>=4&&!isNaN(_Cc)&&_Cc>=1&&_Cc<=3;
+  const cuOkS=!isNaN(_Cu)&&_Cu>=6&&!isNaN(_Cc)&&_Cc>=1&&_Cc<=3;
+  document.getElementById('cucc_check').textContent=
+    (isNaN(_Cu)||isNaN(_Cc))?'—': cuOkG?'✅ GW أو SW': cuOkS?'✅ SW':'❌ GP / SP';
 
   showStatus('✅ تم الحساب بنجاح — ASTM D6913-17 Double Separation',true);
   document.getElementById('btnSave').disabled=false;
@@ -510,18 +939,35 @@ function calculate(){
   updateReportTable();
 }
 
-/* ═══ Read combined passing from summaryBody ═══ */
-function getCombinedPassing(mmTarget){
-  const rows=document.querySelectorAll('#summaryBody tr td[data-mm]');
-  for(const td of rows){
-    if(parseFloat(td.getAttribute('data-mm'))===mmTarget){
-      return parseFloat(td.textContent.replace('%',''));
+/* ═══ Global gradation coefficients ═══ */
+let _gradData=[], _D10=NaN, _D30=NaN, _D60=NaN, _Cu=NaN, _Cc=NaN;
+
+/* ═══ Log-linear interpolation for Dn ═══ */
+function interpolateDn(data,targetPct){
+  const sorted=[...data].filter(d=>d.pass>=0&&d.pass<=100).sort((a,b)=>a.mm-b.mm);
+  for(let i=0;i<sorted.length-1;i++){
+    const p1=sorted[i].pass,p2=sorted[i+1].pass;
+    if(p1<=targetPct&&p2>=targetPct&&p2!==p1){
+      const lD1=Math.log10(sorted[i].mm),lD2=Math.log10(sorted[i+1].mm);
+      return Math.pow(10,lD1+(targetPct-p1)/(p2-p1)*(lD2-lD1));
     }
   }
   return NaN;
 }
 
-/* ═══ USCS Classification ═══ */
+/* ═══ Read combined passing from summaryBody ═══ */
+function getCombinedPassing(mmTarget){
+  const cells=document.querySelectorAll('#summaryBody tr td[data-mm]');
+  for(const td of cells){
+    if(Math.abs(parseFloat(td.getAttribute('data-mm'))-mmTarget)<0.0001){
+      const val=parseFloat(td.textContent.replace('%','').trim());
+      return isNaN(val)?NaN:val;
+    }
+  }
+  return NaN;
+}
+
+/* ═══ USCS Classification (ASTM D2487) ═══ */
 function classifySoil(){
   const ll=parseFloat(document.getElementById('ll').value);
   const pl=parseFloat(document.getElementById('pl').value);
@@ -529,78 +975,100 @@ function classifySoil(){
 
   if(pf==='no') return {symbol:'NP',name:'Non Plastic',detail:'العينة غير لدنة حسب اختيار المستخدم.'};
 
-  /* Get combined passing from summaryBody (correct for USCS) */
   const p200=getCombinedPassing(0.075);
   const p4  =getCombinedPassing(4.75);
-  const p19 =getCombinedPassing(19);
 
   if(isNaN(p200)) return {symbol:'—',name:'',detail:'شغّل الحساب أولاً حتى تتوفر نتائج No.200 المجمعة.'};
-  if(isNaN(ll)||isNaN(pl)) return {symbol:'—',name:'أدخل LL و PL',detail:'لازم تدخل LL و PL أو تختار Non Plastic لو العينة غير لدنة.'};
-  if(pl>=ll) return {symbol:'⚠️',name:'بيانات غير منطقية',detail:'PL لازم يكون أصغر من LL.'};
 
-  const pi=ll-pl;
-  const aLine=0.73*(ll-20);
-
-  /* Fine-grained: more than 50% passing No.200 */
+  /* ── Fine-grained ≥50% passes No.200 ── */
   if(p200>=50){
-    let symbol='', name='';
+    if(isNaN(ll)||isNaN(pl))
+      return {symbol:'—',name:'أدخل LL و PL',detail:'لازم تدخل LL و PL لتصنيف التربة الناعمة.'};
+    if(pl>=ll)
+      return {symbol:'⚠️',name:'بيانات غير منطقية',detail:'PL لازم يكون أصغر من LL.'};
+    const pi=ll-pl, aLine=0.73*(ll-20);
+    let symbol='',name='';
     const borderline=(ll>=12&&ll<=25&&pi>=4&&pi<=7);
-    if(borderline){symbol='CL-ML';name='Lean Clay with Silt (Borderline)';}
-    else if(ll<50){ symbol=pi>aLine?'CL':'ML'; name=pi>aLine?'Lean Clay':'Silt';}
-    else { symbol=pi>aLine?'CH':'MH'; name=pi>aLine?'Fat Clay':'Elastic Silt';}
-    return {symbol,name,detail:`LL=${ll.toFixed(1)}% ، PL=${pl.toFixed(1)}% ، PI=${pi.toFixed(1)}% ، A-line=${aLine.toFixed(1)}% — Fine-grained طبقاً لـ USCS/ASTM D2487.`};
+    if(borderline){symbol='CL-ML';name='Lean Clay / Silt (Borderline)';}
+    else if(ll<50){symbol=pi>aLine?'CL':'ML';name=pi>aLine?'CL — Lean Clay طين هزيل':'ML — Silt طمي';}
+    else {symbol=pi>aLine?'CH':'MH';name=pi>aLine?'CH — Fat Clay طين دهني':'MH — Elastic Silt طمي مرن';}
+    return {symbol,name,detail:`LL=${ll.toFixed(1)}% ، PL=${pl.toFixed(1)}% ، PI=${pi.toFixed(1)}% ، خط-A=${aLine.toFixed(1)}% — Fine-grained (ASTM D2487).`};
   }
 
-  /* Coarse-grained: less than 50% passing No.200 */
+  /* ── Coarse-grained <50% passes No.200 ── */
   const fines=p200;
-  const clayey=pi>aLine;
-  const finesSymbol=clayey?'C':'M';
-  const groupType=(!isNaN(p4)&&p4<50)?'G':'S'; // retained on No.4 > 50% → Gravel
+  /* G if more than half of coarse fraction retained on No.4 */
+  const groupType=(!isNaN(p4)&&(p4-fines)<(50-fines))?'G':'S';
 
-  const clean=fines<5;
-  const dual=fines>=5&&fines<=12;
-  const withFines=fines>12;
-
-  let detail=`LL=${ll.toFixed(1)}% ، PI=${pi.toFixed(1)}% ، % مار No.200=${fines.toFixed(1)}% ، % مار No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
-
-  if(clean){
-    const base=groupType==='G'?'Gravel':'Sand';
-    return {symbol:groupType+'W/'+groupType+'P', name:`Well/Poorly Graded ${base}`,
-      detail:detail+' — أقل من 5% ناعم. لتحديد W/P يلزم Cu و Cc من الرسم الحبيبي.'};
+  let finesSymbol='M',clayey=false;
+  if(!isNaN(ll)&&!isNaN(pl)&&pl<ll){
+    const pi=ll-pl, aLine=0.73*(ll-20);
+    clayey=pi>aLine; finesSymbol=clayey?'C':'M';
   }
 
-  if(dual){
-    const sym=`${groupType}W-${groupType}${finesSymbol} / ${groupType}P-${groupType}${finesSymbol}`;
-    return {symbol:sym, name:`Dual Symbol — ${groupType==='G'?'Gravel':'Sand'} with ${clayey?'Clayey':'Silty'} Fines`,
-      detail:detail+' — نطاق Dual Symbols (5%–12%). يلزم Cu و Cc من الرسم الحبيبي لتحديد W أو P.'};
+  const cuAvail=!isNaN(_Cu)&&isFinite(_Cu);
+  const ccAvail=!isNaN(_Cc)&&isFinite(_Cc);
+  const wellGraded=cuAvail&&ccAvail&&(groupType==='G'?(_Cu>=4&&_Cc>=1&&_Cc<=3):(_Cu>=6&&_Cc>=1&&_Cc<=3));
+
+  let detail=`% مار No.200=${fines.toFixed(1)}% ، % مار No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
+  if(cuAvail) detail+=` ، Cᵤ=${_Cu.toFixed(2)}`;
+  if(ccAvail) detail+=` ، Cc=${_Cc.toFixed(2)}`;
+  if(!isNaN(ll)&&!isNaN(pl)&&pl<ll) detail+=` ، PI=${(ll-pl).toFixed(1)}%`;
+
+  if(fines<5){
+    if(!cuAvail||!ccAvail)
+      return {symbol:groupType+'?',name:`${groupType==='G'?'Gravel':'Sand'} — يلزم D10/D30/D60`,detail:detail+' — أقل من 5% ناعم. تحقق من بيانات المنخل لحساب Cu و Cc.'};
+    const sym=wellGraded?groupType+'W':groupType+'P';
+    const names={GW:'GW — حصى متدرج جيداً',GP:'GP — حصى سيء التدرج',SW:'SW — رمل متدرج جيداً',SP:'SP — رمل سيء التدرج'};
+    return {symbol:sym,name:names[sym]||sym,detail:detail+(wellGraded?' ✅ Well-Graded':' ❌ Poorly-Graded')};
   }
 
-  if(withFines){
-    const sym=groupType+finesSymbol;
-    const names={'GC':'Clayey Gravel','GM':'Silty Gravel','SC':'Clayey Sand','SM':'Silty Sand'};
-    return {symbol:sym, name:names[sym]||sym, detail:detail+' — أكثر من 12% ناعم.'};
+  if(fines>=5&&fines<=12){
+    if(!cuAvail||!ccAvail){
+      return {symbol:`${groupType}W-${groupType}${finesSymbol}/${groupType}P-${groupType}${finesSymbol}`,
+        name:'Dual Symbol (يلزم Cu و Cc للتحديد)',detail:detail+' — 5%–12% ناعم.'};
+    }
+    const gradSym=wellGraded?groupType+'W':groupType+'P';
+    const sym=`${gradSym}-${groupType}${finesSymbol}`;
+    const nameMap={
+      'GW-GC':'GW-GC حصى متدرج + طيني','GW-GM':'GW-GM حصى متدرج + طمي',
+      'GP-GC':'GP-GC حصى سيء + طيني',  'GP-GM':'GP-GM حصى سيء + طمي',
+      'SW-SC':'SW-SC رمل متدرج + طيني','SW-SM':'SW-SM رمل متدرج + طمي',
+      'SP-SC':'SP-SC رمل سيء + طيني',  'SP-SM':'SP-SM رمل سيء + طمي'
+    };
+    return {symbol:sym,name:nameMap[sym]||sym,detail:detail+' — Dual Symbol.'};
   }
 
-  return {symbol:'—',name:'',detail:'لم يمكن تحديد التصنيف.'};
+  const sym=groupType+finesSymbol;
+  const nameMap={GC:'GC — Clayey Gravel حصى طيني',GM:'GM — Silty Gravel حصى طمي',
+                 SC:'SC — Clayey Sand رمل طيني',  SM:'SM — Silty Sand رمل طمي'};
+  return {symbol:sym,name:nameMap[sym]||sym,detail:detail+' — أكثر من 12% ناعم.'};
 }
 
 function runClassification(){
   const res=classifySoil();
   const box=document.getElementById('classResultBox');
   const info=document.getElementById('classInputsUsed');
-  if(res.symbol==='—'||res.symbol==='⚠️'||res.symbol==='NP'){
-    box.innerHTML=`<div class="class-empty">${res.name||res.symbol}</div><div class="class-detail" style="margin-top:8px">${res.detail}</div>`;
+  const isEmpty=res.symbol==='—'||res.symbol==='⚠️';
+  if(isEmpty){
+    box.innerHTML=`<div class="class-empty">${res.name||res.symbol}</div><div class="class-detail" style="margin-top:6px">${res.detail}</div>`;
   } else {
-    box.innerHTML=`<div class="class-badge">${res.symbol}</div><div class="class-name">${res.name}</div><div class="class-detail">${res.detail}</div>`;
+    const fs=res.symbol.length>8?'13px':res.symbol.length>5?'16px':'22px';
+    const bg=res.symbol==='NP'?'#777':'#5B2D8E';
+    box.innerHTML=`<div class="class-badge" style="background:${bg};font-size:${fs}">${res.symbol}</div><div class="class-name" style="margin-top:8px">${res.name}</div><div class="class-detail" style="margin-top:6px">${res.detail}</div>`;
   }
   if(info) info.textContent=res.detail;
-  /* Sync to report */
   const rc=document.getElementById('reportClass');
   if(rc) rc.textContent='التصنيف: '+res.symbol+(res.name?' — '+res.name:'');
 }
 
 /* ═══ Render chart ═══ */
 function renderChart(){
+  /* Guard: wait for Plotly CDN to load */
+  if(typeof Plotly === 'undefined'){
+    setTimeout(renderChart, 400);
+    return;
+  }
   const rows=Array.from(document.querySelectorAll('#summaryBody tr'));
   const data=[];
   rows.forEach(r=>{
@@ -608,42 +1076,138 @@ function renderChart(){
     if(tds.length>=4){
       const sieve=tds[0].innerText.trim();
       const mm=parseFloat(tds[1].innerText.trim());
-      const pass=parseFloat((tds[3].innerText||'').replace('%',''));
+      const pass=parseFloat((tds[3].innerText||'').replace('%','').trim());
       if(!isNaN(mm)&&!isNaN(pass)) data.push({sieve,mm,pass});
     }
   });
   const el=document.getElementById('gradChart');
-  if(!data.length){if(el) el.innerHTML='<div style="text-align:center;color:#888;padding:40px">أدخل البيانات واحسب النتائج أولاً</div>';return;}
+  if(!data.length){
+    if(el) el.innerHTML='<div style="text-align:center;color:#888;padding:40px">أدخل البيانات واضغط "احسب النتائج" أولاً</div>';
+    return;
+  }
   data.sort((a,b)=>b.mm-a.mm);
-  const trace={x:data.map(d=>d.mm),y:data.map(d=>d.pass),text:data.map(d=>`${d.sieve}: ${d.pass.toFixed(1)}%`),
-    mode:'lines+markers+text',textposition:'top center',
-    line:{color:'#5B2D8E',width:3},marker:{size:8,color:'#1F6B3A'},hovertemplate:'%{text}<extra></extra>'};
-  const layout={margin:{l:60,r:20,t:40,b:60},paper_bgcolor:'#fff',plot_bgcolor:'#fafafa',
-    title:{text:'Gradation Curve — نسبة المار مقابل حجم المنخل'},
-    xaxis:{title:'Sieve size (mm)',type:'log',autorange:'reversed',gridcolor:'#ddd',zeroline:false},
-    yaxis:{title:'Passing (%)',range:[0,100],gridcolor:'#ddd',zeroline:false},
-    shapes:[
-      {type:'line',x0:0.075,x1:75,y0:10,y1:10,line:{color:'#bbb',dash:'dot',width:1}},
-      {type:'line',x0:0.075,x1:75,y0:30,y1:30,line:{color:'#bbb',dash:'dot',width:1}},
-      {type:'line',x0:0.075,x1:75,y0:60,y1:60,line:{color:'#bbb',dash:'dot',width:1}},
-      {type:'line',x0:0.075,x1:75,y0:90,y1:90,line:{color:'#bbb',dash:'dot',width:1}}
-    ],showlegend:false};
-  Plotly.newPlot('gradChart',[trace],layout,{responsive:true,displayModeBar:false});
+
+  /* Sieve reference lines (vertical) */
+  const sieveRefs=[
+    {mm:75,  label:'3"'},
+    {mm:19,  label:'¾"'},
+    {mm:9.5, label:'⅜"'},
+    {mm:4.75,label:'No.4'},
+    {mm:2,   label:'No.10'},
+    {mm:0.425,label:'No.40'},
+    {mm:0.075,label:'No.200'}
+  ];
+  const vShapes=sieveRefs.map(s=>({
+    type:'line',x0:s.mm,x1:s.mm,y0:0,y1:100,
+    line:{color:'#ddd',dash:'dot',width:1}
+  }));
+  const hShapes=[10,30,60,90].map(y=>({
+    type:'line',x0:0.04,x1:150,y0:y,y1:y,
+    line:{color:'#e8e8e8',dash:'dot',width:1}
+  }));
+
+  const trace={
+    x:data.map(d=>d.mm),
+    y:data.map(d=>d.pass),
+    text:data.map(d=>`<b>${d.sieve}</b><br>${d.pass.toFixed(1)}%`),
+    mode:'lines+markers',
+    line:{color:'#5B2D8E',width:3},
+    marker:{size:9,color:'#1F6B3A',symbol:'circle'},
+    hovertemplate:'%{text}<extra></extra>',
+    name:''
+  };
+
+  /* Sieve label annotations above x-axis */
+  const annotations=sieveRefs.map(s=>({
+    x:Math.log10(s.mm), y:-8, xref:'x', yref:'y',
+    text:s.label, showarrow:false,
+    font:{size:9,color:'#666'},
+    textangle:0
+  }));
+  /* Data point labels */
+  const dataAnnotations=data.map(d=>({
+    x:Math.log10(d.mm), y:d.pass+4, xref:'x', yref:'y',
+    text:d.pass.toFixed(1)+'%', showarrow:false,
+    font:{size:9,color:'#4a1a8a'}
+  }));
+
+  const layout={
+    margin:{l:55,r:20,t:50,b:55},
+    paper_bgcolor:'#fff',
+    plot_bgcolor:'#fafafa',
+    title:{text:'منحنى التدرج الحبيبي / Particle Size Distribution',font:{size:13,color:'#333'}},
+    xaxis:{
+      title:{text:'حجم الحبة (mm) / Particle Size',font:{size:11}},
+      type:'log',
+      autorange:false,
+      /* range in log10: log10(150)≈2.18 → log10(0.04)≈-1.4, REVERSED (coarse left, fine right) */
+      range:[2.18, -1.40],
+      gridcolor:'#eee',
+      zeroline:false,
+      tickvals:[100,75,50,37.5,25,19,9.5,4.75,2,1,0.425,0.15,0.075,0.04],
+      ticktext:['100','75','50','37.5','25','19','9.5','4.75','2','1','0.425','0.15','0.075','0.04'],
+      tickangle:-45,
+      tickfont:{size:9}
+    },
+    yaxis:{
+      title:{text:'% المار / % Passing',font:{size:11}},
+      range:[-6,105],
+      gridcolor:'#eee',
+      zeroline:true,
+      zerolinecolor:'#ccc',
+      tickfont:{size:10}
+    },
+    shapes:[...vShapes,...hShapes],
+    annotations:[...annotations,...dataAnnotations],
+    showlegend:false
+  };
+
+  Plotly.newPlot('gradChart',[trace],layout,{
+    responsive:true,
+    displayModeBar:true,
+    modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d']
+  });
 }
 
-/* ═══ Reset ═══ */
+/* ═══ Reset — clears EVERYTHING ═══ */
 function resetForm(){
-  ['cp_75','cp_63','cp_50','cp_375','cp_25','cp_19','ss1_19','ss1_95','ss2_95','ss2_475','ss2_2','ss2_0425','ss2_015','ss2_0075','ll','pl'].forEach(id=>{
+  ['cp_75','cp_63','cp_50','cp_375','cp_25','cp_19',
+   'ss1_19','ss1_95',
+   'ss2_95','ss2_475','ss2_2','ss2_0425','ss2_015','ss2_0075',
+   'll','pl','fpmm','cp1md',
+   'subs1mm','subs1w','subs2md_input',
+   'cp1mm','wcp','ss2_washed_md'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
+  /* reset hidden computed fields */
+  ['subs1md','subs2md','cp1md'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='0';});
   document.getElementById('plasticityFlag').value='auto';
-  document.getElementById('summaryBody').innerHTML='<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr>';
-  ['fpmd_disp','smd_disp','cscf1_val','cscf2_val','cffp2_val'].forEach(id=>document.getElementById(id).textContent='—');
-  ['p_cp_75','p_cp_63','p_cp_50','p_cp_375','p_cp_25','p_cp_19','p_ss1_19','p_ss1_95','fp_95','fp_475','fp_2','fp_0425','fp_015','fp_0075'].forEach(id=>document.getElementById(id).textContent='—');
-  document.getElementById('status').className='';
-  document.getElementById('btnSave').disabled=true;
-  document.getElementById('classResultBox').innerHTML='<div class="class-empty">أدخل البيانات وشغّل الحساب للحصول على التصنيف.</div>';
+  ['fpmd_disp','smd_disp','cscf1_val','cscf2_val','cffp2_val',
+   'subs1md_disp','cp1md_disp',
+   'wash_loss_disp','wash_loss_pct','sieve_sum_disp','sieve_check_disp'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent='—';
+  });
+  ['p_cp_75','p_cp_63','p_cp_50','p_cp_375','p_cp_25','p_cp_19',
+   'p_ss1_75','p_ss1_63','p_ss1_50','p_ss1_375','p_ss1_25','p_ss1_19','p_ss1_95','p_ss1_475',
+   'fp_95','fp_475','fp_2','fp_0425','fp_015','fp_0075'].forEach(id=>
+    document.getElementById(id).textContent='—');
+  document.getElementById('summaryBody').innerHTML=
+    '<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr>';
+  _gradData=[];_D10=NaN;_D30=NaN;_D60=NaN;_Cu=NaN;_Cc=NaN;
+  ['d10_val','d30_val','d60_val','cu_val','cc_val'].forEach(id=>
+    document.getElementById(id).textContent='—');
+  document.getElementById('cucc_check').textContent='—';
+  const chartEl=document.getElementById('gradChart');
+  if(chartEl){
+    if(typeof Plotly!=='undefined') try{Plotly.purge(chartEl);}catch(e){}
+    chartEl.innerHTML='<div style="text-align:center;color:#888;padding:60px 20px;font-size:13px">أدخل البيانات واضغط "احسب النتائج" لعرض منحنى التدرج</div>';
+  }
+  document.getElementById('classResultBox').innerHTML=
+    '<div class="class-empty">أدخل البيانات واضغط "احسب النتائج".</div>';
   document.getElementById('classInputsUsed').textContent='لم يتم الحساب بعد.';
+  const rc2=document.getElementById('reportClass');if(rc2) rc2.textContent='التصنيف: —';
+  const st=document.getElementById('status');st.textContent='';st.className='';
+  document.getElementById('btnSave').disabled=true;
 }
 
 /* ═══ Session save/load ═══ */
@@ -751,8 +1315,416 @@ function printReport(){
   w.document.close();w.focus();setTimeout(()=>w.print(),600);
 }
 
+
+/* ═══════════════════════════════════════════════════════
+   SINGLE SEPARATION — فصل واحد
+   ══════════════════════════════════════════════════════ */
+
+/* Sep sieve config — which rows to show/hide in SubS table */
+const S1_SEP_CONFIG = {
+  '75':   {lbl:'3" (Sep)',  subRows:['s1_sub_r95','s1_sub_r475']},
+  '63':   {lbl:'2½" (Sep)', subRows:['s1_sub_r95','s1_sub_r475']},
+  '50':   {lbl:'2" (Sep)',  subRows:['s1_sub_r95','s1_sub_r475']},
+  '37.5': {lbl:'1½" (Sep)', subRows:['s1_sub_r95','s1_sub_r475']},
+  '25':   {lbl:'1" (Sep)',  subRows:['s1_sub_r95','s1_sub_r475']},
+  '19':   {lbl:'¾" (Sep)',  subRows:['s1_sub_r95','s1_sub_r475']},
+  '9.5':  {lbl:'⅜" (Sep)',  subRows:['s1_sub_r475']},
+  '4.75': {lbl:'No.4 (Sep)',subRows:[]},
+  '2':    {lbl:'No.10 (Sep)',subRows:[]}
+};
+
+/* CP rows that should be hidden when Sep is at or below that sieve */
+const S1_CP_ALL = [
+  {id:'s1_cp_75',  mm:75,    lbl:'3"'},
+  {id:'s1_cp_63',  mm:63,    lbl:'2½"'},
+  {id:'s1_cp_50',  mm:50,    lbl:'2"'},
+  {id:'s1_cp_375', mm:37.5,  lbl:'1½"'},
+  {id:'s1_cp_25',  mm:25,    lbl:'1"'},
+];
+
+function s1_onSepChange(){
+  const sep=parseFloat(document.getElementById('s1_sep').value);
+  const cfg=S1_SEP_CONFIG[String(document.getElementById('s1_sep').value)];
+
+  /* Update Sep row labels */
+  document.getElementById('s1_sep_lbl').innerHTML='<b>'+(cfg?cfg.lbl:'Sep')+'</b>';
+  document.getElementById('s1_sep_mm_td').innerHTML='<b>'+sep.toFixed(1)+'</b>';
+  document.getElementById('s1_sub_sep_lbl').innerHTML='<b>'+(cfg?cfg.lbl:'Sep')+'</b>';
+  document.getElementById('s1_sub_sep_mm').innerHTML='<b>'+sep.toFixed(1)+'</b>';
+
+  /* Show/hide CP rows above Sep */
+  S1_CP_ALL.forEach(r=>{
+    const row=document.getElementById(r.id)?.closest('tr');
+    if(row) row.style.display=r.mm>sep?'none':'';
+  });
+
+  /* Show/hide SubS rows that are above Sep */
+  const show95 = sep>9.5;
+  const show475= sep>4.75;
+  const r95=document.getElementById('s1_sub_r95');
+  const r475=document.getElementById('s1_sub_r475');
+  if(r95)  r95.style.display =show95 ?'':'none';
+  if(r475) r475.style.display=show475?'':'none';
+
+  s1_calculate();
+}
+
+let _s1GradData=[], _s1D10=NaN, _s1D30=NaN, _s1D60=NaN, _s1Cu=NaN, _s1Cc=NaN;
+
+function s1_v(id){const x=parseFloat(document.getElementById(id)?.value);return isNaN(x)?0:x;}
+
+function s1_calculate(){
+  const sep   = parseFloat(document.getElementById('s1_sep').value)||19;
+  const wfp   = s1_v('s1_wfp');
+  const FP_Mm = s1_v('s1_fpmm');
+  const CP_Md = s1_v('s1_cpmd');
+  const SubS  = s1_v('s1_subsmd');
+
+  const FP_Md = FP_Mm / (1 + wfp/100);
+  const S_Md  = CP_Md + FP_Md;
+
+  const s1set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  s1set('s1_fpmd_disp', S_Md>0?FP_Md.toFixed(3)+' جم':'—');
+  s1set('s1_smd_disp',  S_Md>0?S_Md.toFixed(3)+' جم':'—');
+
+  if(!S_Md){s1_showStatus('أدخل البيانات الأساسية أولاً',false);return;}
+
+  /* CP passing percentages */
+  const cpInputMap={75:'s1_cp_75',63:'s1_cp_63',50:'s1_cp_50',37.5:'s1_cp_375',25:'s1_cp_25'};
+  const cpMM=[75,63,50,37.5,25];
+  const cpVals={};
+  cpMM.forEach(m=>{ cpVals[m]=s1_v(cpInputMap[m]); });
+  const cpSep=s1_v('s1_cp_sep');
+
+  /* Show passing % for CP sieves */
+  const cpPassIds={75:'s1_p_cp_75',63:'s1_p_cp_63',50:'s1_p_cp_50',37.5:'s1_p_cp_375',25:'s1_p_cp_25'};
+  cpMM.forEach(m=>{
+    if(m>sep){s1set(cpPassIds[m],'—');return;}
+    s1set(cpPassIds[m],fmtPct((1-cpVals[m]/S_Md)*100));
+  });
+  /* Sep row in CP */
+  const CSCF=(1-cpSep/S_Md)*100;
+  s1set('s1_p_cp_sep',fmtPct(CSCF));
+  s1set('s1_cscf_val',fmtPct(CSCF));
+
+  /* SubS partial passing */
+  const subFCMR={
+    sep:    s1_v('s1_sub_sep'),
+    '9.5':  s1_v('s1_sub_95'),
+    '4.75': s1_v('s1_sub_475'),
+    '2':    s1_v('s1_sub_2'),
+    '0.425':s1_v('s1_sub_0425'),
+    '0.15': s1_v('s1_sub_015'),
+    '0.075':s1_v('s1_sub_0075')
+  };
+  const subPartialIds={
+    sep:'s1_fp_sep','9.5':'s1_fp_95','4.75':'s1_fp_475',
+    '2':'s1_fp_2','0.425':'s1_fp_0425','0.15':'s1_fp_015','0.075':'s1_fp_0075'
+  };
+  Object.keys(subFCMR).forEach(k=>{
+    s1set(subPartialIds[k], SubS>0?fmtPct((1-subFCMR[k]/SubS)*100):'—');
+  });
+
+  /* Build combined results table */
+  const allSieves=[
+    {lbl:'3"',   mm:75,    type:'cp'},
+    {lbl:'2½"',  mm:63,    type:'cp'},
+    {lbl:'2"',   mm:50,    type:'cp'},
+    {lbl:'1½"',  mm:37.5,  type:'cp'},
+    {lbl:'1"',   mm:25,    type:'cp'},
+    {lbl:document.getElementById('s1_sep_lbl')?.innerText.replace('<b>','').replace('</b>','')||'Sep',
+                 mm:sep,   type:'sep'},
+    {lbl:'⅜"',   mm:9.5,   type:'sub'},
+    {lbl:'No.4', mm:4.75,  type:'sub'},
+    {lbl:'No.10',mm:2,     type:'sub'},
+    {lbl:'No.40',mm:0.425, type:'sub'},
+    {lbl:'No.100',mm:0.15, type:'sub'},
+    {lbl:'No.200',mm:0.075,type:'sub'}
+  ].filter(r=>r.mm<=sep||r.type==='cp'?r.mm<=sep:true);
+
+  /* Compute combined CMR and passing for each */
+  function combinedPass(mm){
+    if(mm>=sep){
+      /* use CP data */
+      if(mm===sep) return CSCF;
+      const cmrVal = mm===75?cpVals[75]:mm===63?cpVals[63]:mm===50?cpVals[50]:mm===37.5?cpVals[37.5]:cpVals[25];
+      return (1-cmrVal/S_Md)*100;
+    } else {
+      /* use SubS data */
+      const fcmrKey = mm===9.5?'9.5':mm===4.75?'4.75':mm===2?'2':mm===0.425?'0.425':mm===0.15?'0.15':'0.075';
+      return CSCF*(1-subFCMR[fcmrKey]/SubS);
+    }
+  }
+
+  const body=document.getElementById('s1_summaryBody');
+  body.innerHTML='';
+  _s1GradData=[];
+  const labelEq={
+    cp:'% مار = (1 − CMR ÷ S,Md) × 100',
+    sep:'CSCF = (1 − CP,CMR@Sep ÷ S,Md) × 100',
+    sub:'% مار = CSCF × (1 − FCMR ÷ SubS,Md)'
+  };
+
+  allSieves.forEach(r=>{
+    if(r.type==='cp'&&r.mm>sep) return;
+    const pp=combinedPass(r.mm);
+    const cls=r.type==='sub'?'td-calc':r.type==='sep'?'td-sep':'td-pass';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><b>${r.lbl}</b></td><td>${r.mm}</td><td class="td-input">—</td><td class="${cls}" data-s1mm="${r.mm}">${fmtPct(pp)}</td><td>${fmtPct(pp)}</td><td style="font-size:10px;color:#666;text-align:right">${labelEq[r.type]}</td>`;
+    body.appendChild(tr);
+    if(!isNaN(pp)&&isFinite(pp)) _s1GradData.push({mm:r.mm,pass:pp});
+  });
+
+  /* D10 / D30 / D60 / Cu / Cc */
+  _s1D10=interpolateDn(_s1GradData,10);
+  _s1D30=interpolateDn(_s1GradData,30);
+  _s1D60=interpolateDn(_s1GradData,60);
+  _s1Cu=(!isNaN(_s1D10)&&_s1D10>0)?_s1D60/_s1D10:NaN;
+  _s1Cc=(!isNaN(_s1D10)&&_s1D10>0&&!isNaN(_s1D30)&&!isNaN(_s1D60)&&_s1D60>0)?(_s1D30*_s1D30)/(_s1D60*_s1D10):NaN;
+  const f3=n=>(isNaN(n)||!isFinite(n))?'—':n.toFixed(3);
+  const f2=n=>(isNaN(n)||!isFinite(n))?'—':n.toFixed(2);
+  s1set('s1_d10_val',f3(_s1D10)); s1set('s1_d30_val',f3(_s1D30)); s1set('s1_d60_val',f3(_s1D60));
+  s1set('s1_cu_val',f2(_s1Cu));   s1set('s1_cc_val',f2(_s1Cc));
+  const cuOk=!isNaN(_s1Cu)&&isFinite(_s1Cu)&&!isNaN(_s1Cc)&&isFinite(_s1Cc);
+  s1set('s1_cucc_check', cuOk?(_s1Cu>=4&&_s1Cc>=1&&_s1Cc<=3?'✅ GW أو SW':(_s1Cu>=6&&_s1Cc>=1&&_s1Cc<=3?'✅ SW':'❌ GP / SP')):'—');
+
+  s1_showStatus('✅ تم الحساب بنجاح — فصل واحد',true);
+  s1_runClassification();
+  s1_renderChart();
+}
+
+function s1_getCombinedPassing(mmTarget){
+  const cells=document.querySelectorAll('#s1_summaryBody tr td[data-s1mm]');
+  for(const td of cells){
+    if(Math.abs(parseFloat(td.getAttribute('data-s1mm'))-mmTarget)<0.0001){
+      return parseFloat(td.textContent.replace('%','').trim());
+    }
+  }
+  return NaN;
+}
+
+function s1_classifySoil(){
+  const ll=parseFloat(document.getElementById('s1_ll')?.value);
+  const pl=parseFloat(document.getElementById('s1_pl')?.value);
+  const pf=document.getElementById('s1_plasticityFlag')?.value||'auto';
+  if(pf==='no') return {symbol:'NP',name:'Non Plastic',detail:'العينة غير لدنة.'};
+  const p200=s1_getCombinedPassing(0.075);
+  const p4  =s1_getCombinedPassing(4.75);
+  if(isNaN(p200)) return {symbol:'—',name:'',detail:'شغّل الحساب أولاً.'};
+  if(p200>=50){
+    if(isNaN(ll)||isNaN(pl)) return {symbol:'—',name:'أدخل LL و PL',detail:'لازم تدخل LL و PL للتربة الناعمة.'};
+    if(pl>=ll) return {symbol:'⚠️',name:'بيانات غير منطقية',detail:'PL أكبر من أو يساوي LL.'};
+    const pi=ll-pl, aLine=0.73*(ll-20);
+    const bl=(ll>=12&&ll<=25&&pi>=4&&pi<=7);
+    let sym='',nm='';
+    if(bl){sym='CL-ML';nm='CL-ML Borderline';}
+    else if(ll<50){sym=pi>aLine?'CL':'ML';nm=pi>aLine?'CL — Lean Clay':'ML — Silt';}
+    else{sym=pi>aLine?'CH':'MH';nm=pi>aLine?'CH — Fat Clay':'MH — Elastic Silt';}
+    return {symbol:sym,name:nm,detail:`LL=${ll.toFixed(1)}% ، PI=${pi.toFixed(1)}% ، A-line=${aLine.toFixed(1)}%`};
+  }
+  const fines=p200;
+  const gt=(!isNaN(p4)&&(p4-fines)<(50-fines))?'G':'S';
+  let fs='M';
+  if(!isNaN(ll)&&!isNaN(pl)&&pl<ll){const pi=ll-pl,aL=0.73*(ll-20);fs=pi>aL?'C':'M';}
+  const cuA=!isNaN(_s1Cu)&&isFinite(_s1Cu), ccA=!isNaN(_s1Cc)&&isFinite(_s1Cc);
+  const wg=cuA&&ccA&&(gt==='G'?(_s1Cu>=4&&_s1Cc>=1&&_s1Cc<=3):(_s1Cu>=6&&_s1Cc>=1&&_s1Cc<=3));
+  let dtl=`% مار No.200=${fines.toFixed(1)}% ، % مار No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
+  if(cuA) dtl+=` ، Cᵤ=${_s1Cu.toFixed(2)}`; if(ccA) dtl+=` ، Cc=${_s1Cc.toFixed(2)}`;
+  if(fines<5){
+    if(!cuA||!ccA) return {symbol:gt+'?',name:`${gt==='G'?'Gravel':'Sand'} — يلزم Cu و Cc`,detail:dtl};
+    const sym=wg?gt+'W':gt+'P';
+    const nm={GW:'GW — حصى متدرج جيداً',GP:'GP — حصى سيء التدرج',SW:'SW — رمل متدرج جيداً',SP:'SP — رمل سيء التدرج'};
+    return {symbol:sym,name:nm[sym]||sym,detail:dtl+(wg?' ✅ Well-Graded':' ❌ Poorly-Graded')};
+  }
+  if(fines>=5&&fines<=12){
+    if(!cuA||!ccA) return {symbol:`${gt}W-${gt}${fs}/${gt}P-${gt}${fs}`,name:'Dual Symbol',detail:dtl+' — يلزم Cu و Cc.'};
+    const gs=wg?gt+'W':gt+'P';
+    const sym=`${gs}-${gt}${fs}`;
+    const nm={'GW-GC':'GW-GC','GW-GM':'GW-GM','GP-GC':'GP-GC','GP-GM':'GP-GM','SW-SC':'SW-SC','SW-SM':'SW-SM','SP-SC':'SP-SC','SP-SM':'SP-SM'};
+    return {symbol:sym,name:nm[sym]||sym,detail:dtl+' — Dual Symbol.'};
+  }
+  const sym=gt+fs;
+  const nm={GC:'GC — Clayey Gravel',GM:'GM — Silty Gravel',SC:'SC — Clayey Sand',SM:'SM — Silty Sand'};
+  return {symbol:sym,name:nm[sym]||sym,detail:dtl+' — أكثر من 12% ناعم.'};
+}
+
+function s1_runClassification(){
+  const res=s1_classifySoil();
+  const box=document.getElementById('s1_classResultBox');
+  const det=document.getElementById('s1_classDetail');
+  const isEmpty=res.symbol==='—'||res.symbol==='⚠️';
+  if(isEmpty){
+    box.innerHTML=`<div class="class-empty">${res.name||res.symbol}</div>`;
+  } else {
+    const fs=res.symbol.length>8?'13px':res.symbol.length>5?'16px':'22px';
+    const bg=res.symbol==='NP'?'#777':'#5B2D8E';
+    box.innerHTML=`<div class="class-badge" style="background:${bg};font-size:${fs}">${res.symbol}</div><div class="class-name" style="margin-top:8px">${res.name}</div>`;
+  }
+  if(det) det.textContent=res.detail;
+}
+
+function s1_renderChart(){
+  if(typeof Plotly==='undefined'){setTimeout(s1_renderChart,400);return;}
+  const el=document.getElementById('s1_gradChart');
+  if(!_s1GradData.length){
+    if(el) el.innerHTML='<div style="text-align:center;color:#888;padding:60px 20px">أدخل البيانات واحسب أولاً</div>';
+    return;
+  }
+  const data=[..._s1GradData].sort((a,b)=>b.mm-a.mm);
+  const sieveRefs=[{mm:75,label:'3"'},{mm:19,label:'¾"'},{mm:9.5,label:'⅜"'},{mm:4.75,label:'No.4'},{mm:2,label:'No.10'},{mm:0.425,label:'No.40'},{mm:0.075,label:'No.200'}];
+  const vShapes=sieveRefs.map(s=>({type:'line',x0:s.mm,x1:s.mm,y0:0,y1:100,line:{color:'#ddd',dash:'dot',width:1}}));
+  const hShapes=[10,30,60,90].map(y=>({type:'line',x0:0.04,x1:150,y0:y,y1:y,line:{color:'#e8e8e8',dash:'dot',width:1}}));
+  const trace={
+    x:data.map(d=>d.mm),y:data.map(d=>d.pass),
+    text:data.map(d=>`<b>${d.mm}</b><br>${d.pass.toFixed(1)}%`),
+    mode:'lines+markers',line:{color:'#1A3A6B',width:3},
+    marker:{size:9,color:'#1F6B3A'},hovertemplate:'%{text}<extra></extra>',name:''
+  };
+  const annot=sieveRefs.map(s=>({x:Math.log10(s.mm),y:-8,xref:'x',yref:'y',text:s.label,showarrow:false,font:{size:9,color:'#666'}}));
+  const datAnnot=data.map(d=>({x:Math.log10(d.mm),y:d.pass+4,xref:'x',yref:'y',text:d.pass.toFixed(1)+'%',showarrow:false,font:{size:9,color:'#1A3A6B'}}));
+  const layout={
+    margin:{l:55,r:20,t:50,b:55},paper_bgcolor:'#fff',plot_bgcolor:'#fafafa',
+    title:{text:'منحنى التدرج — فصل واحد',font:{size:13,color:'#333'}},
+    xaxis:{title:{text:'حجم الحبة (mm)',font:{size:11}},type:'log',autorange:false,range:[2.18,-1.40],gridcolor:'#eee',zeroline:false,
+      tickvals:[100,75,50,37.5,25,19,9.5,4.75,2,0.425,0.15,0.075],
+      ticktext:['100','75','50','37.5','25','19','9.5','4.75','2','0.425','0.15','0.075'],tickangle:-45,tickfont:{size:9}},
+    yaxis:{title:{text:'% المار',font:{size:11}},range:[-6,105],gridcolor:'#eee',zeroline:true,zerolinecolor:'#ccc'},
+    shapes:[...vShapes,...hShapes],annotations:[...annot,...datAnnot],showlegend:false
+  };
+  Plotly.newPlot('s1_gradChart',[trace],layout,{responsive:true,displayModeBar:true,modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d']});
+}
+
+function s1_showStatus(msg,ok){
+  const el=document.getElementById('s1_status');
+  if(!el)return;
+  el.textContent=msg;
+  el.className=ok?'status-ok':'status-err';
+  el.style.display='block';
+}
+
+function s1_resetForm(){
+  ['s1_wfp','s1_fpmm','s1_cpmd','s1_subsmd',
+   's1_cp_75','s1_cp_63','s1_cp_50','s1_cp_375','s1_cp_25','s1_cp_sep',
+   's1_sub_sep','s1_sub_95','s1_sub_475','s1_sub_2','s1_sub_0425','s1_sub_015','s1_sub_0075',
+   's1_ll','s1_pl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('s1_plasticityFlag').value='auto';
+  ['s1_fpmd_disp','s1_smd_disp','s1_cscf_val'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent='—';
+  });
+  ['s1_p_cp_75','s1_p_cp_63','s1_p_cp_50','s1_p_cp_375','s1_p_cp_25','s1_p_cp_sep',
+   's1_fp_sep','s1_fp_95','s1_fp_475','s1_fp_2','s1_fp_0425','s1_fp_015','s1_fp_0075'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent='—';
+  });
+  document.getElementById('s1_summaryBody').innerHTML=
+    '<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr>';
+  _s1GradData=[];_s1D10=NaN;_s1D30=NaN;_s1D60=NaN;_s1Cu=NaN;_s1Cc=NaN;
+  ['s1_d10_val','s1_d30_val','s1_d60_val','s1_cu_val','s1_cc_val'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent='—';
+  });
+  const cc=document.getElementById('s1_cucc_check');if(cc)cc.textContent='—';
+  const chartEl=document.getElementById('s1_gradChart');
+  if(chartEl){
+    if(typeof Plotly!=='undefined') try{Plotly.purge(chartEl);}catch(e){}
+    chartEl.innerHTML='<div style="text-align:center;color:#888;padding:60px 20px;font-size:13px">أدخل البيانات واضغط "احسب النتائج"</div>';
+  }
+  const box=document.getElementById('s1_classResultBox');
+  if(box) box.innerHTML='<div class="class-empty">أدخل البيانات واضغط "احسب النتائج".</div>';
+  const det=document.getElementById('s1_classDetail');if(det)det.textContent='—';
+  const st=document.getElementById('s1_status');if(st){st.textContent='';st.style.display='none';}
+}
+
+
+/* ═══ Double-Sep sieve change handler ═══ */
+function d2_onSepChange(){
+  /* Sep.1 = coarser (1st physical sep on whole sample)
+     Sep.2 = finer   (2nd physical sep on 1stSubS)       */
+  const sep1=parseFloat(document.getElementById('sep1').value)||19;  // COARSER
+  const sep2=parseFloat(document.getElementById('sep2').value)||9.5; // FINER
+
+  if(sep2>=sep1){
+    showStatus('⚠️ Sep.2 يجب أن يكون أصغر من Sep.1 — تم التصحيح تلقائياً',false);
+    const opts=[4.75,9.5,19];
+    const validSep2=opts.filter(o=>o<sep1);
+    document.getElementById('sep2').value=validSep2.length?String(validSep2[validSep2.length-1]):'4.75';
+    return d2_onSepChange();
+  }
+
+  const LBLS={75:'3"',63:'2½"',50:'2"',37.5:'1½"',25:'1"',19:'¾"',9.5:'⅜"',4.75:'No.4'};
+
+  /* ── CP table: show rows mm ≤ sep1 (coarser), highlight sep1 row ── */
+  const cpRows={75:'d2cpr75',63:'d2cpr63',50:'d2cpr50',37.5:'d2cpr375',25:'d2cpr25',19:'d2cpr19'};
+  [75,63,50,37.5,25,19].forEach(mm=>{
+    const row=document.getElementById(cpRows[mm]);
+    if(!row) return;
+    const show=mm<=sep1;
+    row.style.display=show?'':'none';
+    if(mm===sep1){
+      row.style.background='#f3e5ff';
+      document.getElementById('d2cpr19_lbl').innerHTML=`<b>${LBLS[mm]} (Sep.1)</b>`;
+      document.getElementById('d2cpr19_mm').innerHTML=`<b>${mm}</b>`;
+    } else if(show){
+      row.style.background='';
+    }
+  });
+
+  /* ── 1stSubS: show rows sep2 ≤ mm ≤ sep1
+       sep1 row = orange check (top of SubS, should be ~0 retained)
+       sep2 row = purple (the actual 2nd separation sieve)           ── */
+  const ss1Rows={75:'d2ss1r75',63:'d2ss1r63',50:'d2ss1r50',37.5:'d2ss1r375',25:'d2ss1r25',19:'d2ss1r19',9.5:'d2ss1r95',4.75:'d2ss1r475'};
+  [75,63,50,37.5,25,19,9.5,4.75].forEach(mm=>{
+    const row=document.getElementById(ss1Rows[mm]);
+    if(!row) return;
+    const show=mm>=sep2&&mm<=sep1;
+    row.style.display=show?'':'none';
+    if(!show) return;
+    if(mm===sep1){
+      row.style.background='#fff3e0';
+      const lbl=row.querySelector('td');
+      if(lbl) lbl.textContent=`${LBLS[mm]} (Sep.1 — check ≤0.5%)`;
+    } else if(mm===sep2){
+      row.style.background='#f3e5ff';
+      const lbl=row.querySelector('td');
+      if(lbl) lbl.innerHTML=`<b>${LBLS[mm]} (Sep.2)</b>`;
+    } else {
+      row.style.background='';
+      const lbl=row.querySelector('td');
+      if(lbl) lbl.textContent=LBLS[mm]||String(mm);
+    }
+  });
+
+  /* ── 2ndSubS: show rows mm ≤ sep2, highlight sep2 row as header ── */
+  const ss2Rows={9.5:{id:'d2ss2r95',lbl:'d2ss2r95_lbl',name:'⅜"'},4.75:{id:'d2ss2r475',lbl:'d2ss2r475_lbl',name:'No.4'}};
+  [9.5,4.75].forEach(mm=>{
+    const cfg=ss2Rows[mm];
+    const row=document.getElementById(cfg.id);
+    if(!row) return;
+    const show=mm<=sep2;
+    row.style.display=show?'':'none';
+    if(!show) return;
+    row.style.background=mm===sep2?'#f3e5ff':'';
+    const lbl=document.getElementById(cfg.lbl);
+    if(lbl) lbl.innerHTML=mm===sep2?`<b>${cfg.name} (Sep.2)</b>`:cfg.name;
+  });
+
+  /* ── Update card headers ── */
+  const h_cp=document.getElementById('d2_cp_header');
+  if(h_cp) h_cp.textContent=`🪨 1stCP — الجزء الخشن الأول (محجوز على Sep.1 = ${LBLS[sep1]||sep1} = ${sep1}mm)`;
+
+  const h_ss1=document.getElementById('d2_ss1_header');
+  if(h_ss1) h_ss1.textContent=`🔵 1stSubS — العينة الفرعية الأولى (Sep.2=${sep2}mm ↔ Sep.1=${sep1}mm)`;
+
+  const h_ss2=document.getElementById('d2_ss2_header');
+  if(h_ss2) h_ss2.textContent=`🔬 2ndSubS — الجزء الناعم (< Sep.2 = ${LBLS[sep2]||sep2} = ${sep2}mm)`;
+
+  calculate();
+}
+
 /* ═══ Init ═══ */
-window.onload=()=>{switchMainTab('project');calculate();};
+window.onload=()=>{
+  switchMainTab('project');
+  /* Defer calculate until after Plotly has a chance to load */
+  setTimeout(()=>{ calculate(); }, 200);
+};
 </script>
 </body>
 </html>
