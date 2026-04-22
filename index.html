@@ -72,6 +72,34 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
 .project-section-title{font-size:13px;font-weight:700;color:#4a1a8a;border-right:4px solid #5B2D8E;padding:6px 10px;margin-bottom:12px;background:#f3e5ff;border-radius:0 6px 6px 0}
 
 @media(max-width:900px){.params-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
+
+/* ═══ PRINT STYLES ═══ */
+@media print{
+  @page{size:A4 portrait;margin:6mm 7mm 6mm 7mm}
+  body *{visibility:hidden}
+  #a4Report,#a4Report *{visibility:visible}
+  #a4Report{
+    position:fixed;left:0;top:0;width:196mm;
+    box-shadow:none!important;border:none!important;
+    padding:0!important;margin:0!important;
+    background:#fff!important;
+  }
+  .rpt-no-print{display:none!important}
+  /* Ensure chart images print correctly */
+  #a4Report img{
+    display:block!important;
+    visibility:visible!important;
+    max-width:100%!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+  #a4Report canvas{
+    display:block!important;
+    visibility:visible!important;
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+  }
+}
 </style>
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 </head>
@@ -294,7 +322,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
       <div class="card-header bg-orange">📊 النتائج المجمعة / Combined Gradation Results</div>
       <div class="card-body">
         <table><thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>CMR مجمع (جم)</th><th>% مار مجمع</th><th>% مار (شريط)</th><th>المعادلة</th></tr></thead>
-        <tbody id="summaryBody"><tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr></tbody>
+        <tbody id="summaryBody"><tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">Enter data and click "Calculate"</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -344,7 +372,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
           <div class="seg" style="background:#f3e5ff">
             <b style="color:#5B2D8E;font-size:12px">🔬 USCS — ASTM D2487</b>
             <div id="classResultBox" style="margin-top:12px;text-align:center">
-              <div class="class-empty">احسب النتائج أولاً</div>
+              <div class="class-empty">Run calculation first</div>
             </div>
             <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:10px;color:#555;border:1px solid #e0c0ff">
               <span id="classInputsUsed">—</span>
@@ -354,7 +382,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
           <div class="seg" style="background:#fff3e0">
             <b style="color:#8B4500;font-size:12px">🛣️ AASHTO — M 145</b>
             <div id="aashtoResultBox" style="margin-top:12px;text-align:center">
-              <div class="class-empty">احسب النتائج أولاً</div>
+              <div class="class-empty">Run calculation first</div>
             </div>
             <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:10px;color:#555;border:1px solid #ffcc80">
               <span id="aashtoDetail">—</span>
@@ -374,7 +402,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
               <th style="background:#5B2D8E;color:#fff">الاستخدام</th>
             </tr></thead>
             <tbody id="classTableBody">
-              <tr><td colspan="5" style="text-align:center;color:#aaa;padding:12px">احسب النتائج أولاً</td></tr>
+              <tr><td colspan="5" style="text-align:center;color:#aaa;padding:12px">Run calculation first</td></tr>
             </tbody>
           </table>
         </div>
@@ -491,6 +519,8 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
               <tr><td>2"</td><td>50.0</td><td class="td-input"><input type="number" id="s1_cp_50" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_50">—</td></tr>
               <tr><td>1½"</td><td>37.5</td><td class="td-input"><input type="number" id="s1_cp_375" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_375">—</td></tr>
               <tr><td>1"</td><td>25.0</td><td class="td-input"><input type="number" id="s1_cp_25" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_25">—</td></tr>
+              <tr id="s1_cp_row_19"><td>¾"</td><td>19.0</td><td class="td-input"><input type="number" id="s1_cp_19" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_19">—</td></tr>
+              <tr id="s1_cp_row_95"><td>⅜"</td><td>9.5</td><td class="td-input"><input type="number" id="s1_cp_95" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_95">—</td></tr>
               <tr id="s1_sep_row" style="background:#f3e5ff"><td id="s1_sep_lbl"><b>¾" (Sep)</b></td><td id="s1_sep_mm_td"><b>19.0</b></td><td class="td-input"><input type="number" id="s1_cp_sep" value="0" onchange="s1_calculate()"></td><td id="s1_p_cp_sep">—</td></tr>
             </tbody>
           </table>
@@ -552,7 +582,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
       <div class="card-body">
         <table>
           <thead><tr><th>المنخل</th><th>المقاس (mm)</th><th>CMR مجمع (جم)</th><th>% مار مجمع</th><th>شريط %</th><th>المعادلة</th></tr></thead>
-          <tbody id="s1_summaryBody"><tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr></tbody>
+          <tbody id="s1_summaryBody"><tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">Enter data and click "Calculate"</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -565,7 +595,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
           <div style="font-size:12px;color:#555">الرسم يُحدَّث تلقائياً عند الحساب.</div>
           <button class="btn-calc" style="padding:8px 18px;font-size:13px" onclick="s1_renderChart()">📉 تحديث الرسم</button>
         </div>
-        <div id="s1_gradChart" style="width:100%;height:420px"><div style="text-align:center;color:#888;padding:60px 20px;font-size:13px">أدخل البيانات واضغط "احسب النتائج"</div></div>
+        <div id="s1_gradChart" style="width:100%;height:420px"><div style="text-align:center;color:#888;padding:60px 20px;font-size:13px">Enter data and click "Calculate"</div></div>
       </div>
     </div>
 
@@ -595,7 +625,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
           <div class="seg" style="background:#f3e5ff">
             <b style="color:#5B2D8E;font-size:12px">🔬 USCS — ASTM D2487</b>
             <div id="s1_classResultBox" style="margin-top:12px;text-align:center">
-              <div class="class-empty">احسب النتائج أولاً</div>
+              <div class="class-empty">Run calculation first</div>
             </div>
             <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:10px;color:#555;border:1px solid #e0c0ff">
               <span id="s1_classDetail">—</span>
@@ -604,7 +634,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
           <div class="seg" style="background:#fff3e0">
             <b style="color:#8B4500;font-size:12px">🛣️ AASHTO — M 145</b>
             <div id="s1_aashtoResultBox" style="margin-top:12px;text-align:center">
-              <div class="class-empty">احسب النتائج أولاً</div>
+              <div class="class-empty">Run calculation first</div>
             </div>
             <div style="margin-top:10px;background:#fff;border-radius:6px;padding:8px;font-size:10px;color:#555;border:1px solid #ffcc80">
               <span id="s1_aashtoDetail">—</span>
@@ -624,7 +654,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
               <th style="background:#5B2D8E;color:#fff">الاستخدام</th>
             </tr></thead>
             <tbody id="s1_classTableBody">
-              <tr><td colspan="5" style="text-align:center;color:#aaa;padding:12px">احسب النتائج أولاً</td></tr>
+              <tr><td colspan="5" style="text-align:center;color:#aaa;padding:12px">Run calculation first</td></tr>
             </tbody>
           </table>
         </div>
@@ -655,37 +685,172 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
   ═══════════════════════════════════════════ -->
   <div id="tab_report" class="main-tab-section">
 
-    <div class="card">
+    <!-- Action bar — screen only -->
+    <div class="card rpt-no-print">
       <div class="card-header bg-purple">🖨️ تقرير A4 احترافي / Professional A4 Report</div>
-      <div class="card-body">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
-          <div style="font-size:12px;color:#555">التقرير يسحب البيانات من تبويب المشروع وجدول النتائج والرسم البياني والتصنيف.</div>
-          <button class="btn-calc" style="padding:8px 18px;font-size:13px" onclick="printReport()">🖨️ طباعة A4</button>
-        </div>
-        <div id="a4Report" style="background:#fff;border:1px solid #ddd;border-radius:8px;padding:16px;max-width:794px;margin:0 auto;box-shadow:0 2px 8px rgba(0,0,0,.08)">
-          <div style="text-align:center;border-bottom:2px solid #4a1a8a;padding-bottom:8px;margin-bottom:12px">
-            <div style="font-size:18px;font-weight:700;color:#4a1a8a">تقرير التحليل المنخلي - ASTM D6913-17</div>
-            <div style="font-size:11px;color:#666">Composite Sieving Double Separation | تقرير صفحة A4</div>
-          </div>
-          <div id="reportMeta" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:11px;margin-bottom:12px;border:1px solid #eee;border-radius:6px;padding:10px;background:#fafafa"></div>
-          <div id="reportClass" style="background:#f3e5ff;border-radius:6px;padding:10px;margin-bottom:12px;font-size:12px;font-weight:700;color:#5B2D8E">التصنيف: —</div>
-          <div style="font-size:12px;font-weight:700;color:#1A3A6B;margin:8px 0">النتائج المجمعة</div>
-          <div id="reportTableWrap"></div>
-          <div style="margin-top:12px">
-            <img id="reportChartImg" style="width:100%;max-height:300px;object-fit:contain;border:1px solid #ddd;border-radius:6px" alt="Gradation Chart">
-          </div>
-          <div style="margin-top:12px;font-size:10px;color:#777;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
-            <div>الظروف البيئية: <span id="repEnv">—</span></div>
-            <div>طريقة الاختبار: <span id="repMethod">—</span></div>
-            <div>نوع النخل: <span id="repSieving">—</span></div>
-          </div>
-          <div style="margin-top:14px;border-top:1px solid #eee;padding-top:10px;font-size:10px;color:#aaa;text-align:center">
-            تقرير صادر بواسطة ASTM D6913-17 Double Separation App
-          </div>
-        </div>
+      <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div style="font-size:12px;color:#555">التقرير يسحب البيانات تلقائياً — اضغط "طباعة A4" لإرسال التقرير مباشرةً للطابعة في صفحة واحدة.</div>
+        <button class="btn-calc" style="padding:10px 24px;font-size:14px" onclick="printReport()">🖨️ طباعة A4</button>
       </div>
     </div>
 
+    <!-- ═══ A4 REPORT ═══ -->
+    <div id="a4Report" style="background:#fff;border:1px solid #bbb;border-radius:6px;padding:10mm 10mm 8mm 10mm;max-width:794px;margin:0 auto 20px auto;box-shadow:0 4px 16px rgba(0,0,0,.12);font-family:Segoe UI,Tahoma,Arial,sans-serif;font-size:8pt;color:#111;line-height:1.35">
+
+      <!-- ── REPORT HEADER ── -->
+      <table style="width:100%;border-collapse:collapse;margin-bottom:3mm">
+        <tr>
+          <td style="width:30%;font-size:8pt;color:#444;vertical-align:top">
+            <div style="font-weight:700;font-size:9pt;color:#1a1a1a">MATERIALS AND DESIGN</div>
+            <div style="font-size:7pt;color:#777"></div>
+          </td>
+          <td style="text-align:center;vertical-align:middle">
+            <div style="font-size:13pt;font-weight:900;color:#4a1a8a;letter-spacing:.5px">SOIL GRADATION REPORT</div>
+            <div id="rpt_header_subtitle" style="font-size:8pt;font-weight:700;color:#333;margin-top:1mm">ASTM D6913-17 — Composite Sieving / Double Separation</div>
+            <div style="font-size:7pt;color:#666;margin-top:0.5mm"></div>
+          </td>
+          <td style="width:30%;text-align:left;font-size:7pt;color:#666;vertical-align:top">
+            <div>Page 1 of 1</div>
+            <div id="rpt_reportNo" style="margin-top:1mm">Report No.: —</div>
+          </td>
+        </tr>
+      </table>
+      <div style="border-top:2.5px solid #4a1a8a;border-bottom:1px solid #c0a0e0;padding:1mm 0;margin-bottom:3mm"></div>
+
+      <!-- ── PROJECT INFORMATION ── -->
+      <div style="background:#4a1a8a;color:#fff;font-size:7.5pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:1.5mm;letter-spacing:.5px">PROJECT INFORMATION</div>
+      <table style="width:100%;border-collapse:collapse;font-size:7.5pt;margin-bottom:3mm">
+        <tr>
+          <td style="width:16%;font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Client</td>
+          <td style="width:34%;padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_clientName">—</td>
+          <td style="width:16%;font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Report No.</td>
+          <td style="width:34%;padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_reportNoCell">—</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Project</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_projectName">—</td>
+          <td style="font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Report Date</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_reportDate">—</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Location</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_siteLocation">—</td>
+          <td style="font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Test Date</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_testDate">—</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Sample No.</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_sampleNo">—</td>
+          <td style="font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Date Received</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_sampleDate">—</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Technician</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_technician">—</td>
+          <td style="font-weight:700;color:#4a1a8a;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f5f0ff">Environment</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_env">—</td>
+        </tr>
+      </table>
+
+      <!-- ── TEST PROCEDURE DETAILS ── -->
+      <div style="background:#1F6B3A;color:#fff;font-size:7.5pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:1.5mm;letter-spacing:.5px">TEST PROCEDURE DETAILS</div>
+      <table style="width:100%;border-collapse:collapse;font-size:7.5pt;margin-bottom:3mm">
+        <tr>
+          <td style="width:12%;font-weight:700;color:#1F6B3A;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f0faf4">Method</td>
+          <td style="width:28%;padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_method">ASTM D6913-17</td>
+          <td style="width:12%;font-weight:700;color:#1F6B3A;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f0faf4">Sieving Type</td>
+          <td style="width:48%;padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_sieveType">Composite — Double Separation</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:#1F6B3A;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f0faf4">Sep.1</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_sep1">—</td>
+        <tr id="rpt_sep2_row">
+          <td style="font-weight:700;color:#1F6B3A;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f0faf4">Sep.2</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_sep2">—</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:#1F6B3A;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f0faf4">S,Md (g)</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc;font-weight:700" id="rpt_smd">—</td>
+          <td style="font-weight:700;color:#1F6B3A;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f0faf4">1stSubS,Md (g)</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc" id="rpt_subs1">—</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:#1F6B3A;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f0faf4">1stCSCF</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc;font-weight:700;color:#5B2D8E" id="rpt_cscf1">—</td>
+          <td style="font-weight:700;color:#1F6B3A;padding:1mm 1.5mm;border:0.5px solid #ccc;background:#f0faf4">2ndCSCF</td>
+          <td style="padding:1mm 1.5mm;border:0.5px solid #ccc;font-weight:700;color:#5B2D8E" id="rpt_cscf2">—</td>
+        </tr>
+      </table>
+
+      <!-- ── TWO-COLUMN LAYOUT: TABLE LEFT, CHART RIGHT ── -->
+      <div style="display:flex;gap:3mm;margin-bottom:3mm;align-items:flex-start">
+
+        <!-- Sieve Analysis Table -->
+        <div style="flex:1;min-width:0">
+          <div style="background:#1A3A6B;color:#fff;font-size:7.5pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:1mm;letter-spacing:.5px">SIEVE ANALYSIS DATA TABLE</div>
+          <table id="rpt_sieveTable" style="width:100%;border-collapse:collapse;font-size:7pt">
+            <thead>
+              <tr style="background:#d0dff0">
+                <th style="border:0.5px solid #aaa;padding:1mm 1.5mm;text-align:center;font-weight:700;color:#1A3A6B">Sieve</th>
+                <th style="border:0.5px solid #aaa;padding:1mm 1.5mm;text-align:center;font-weight:700;color:#1A3A6B">mm</th>
+                <th style="border:0.5px solid #aaa;padding:1mm 1.5mm;text-align:center;font-weight:700;color:#1A3A6B">CMR (g)</th>
+                <th style="border:0.5px solid #aaa;padding:1mm 1.5mm;text-align:center;font-weight:700;color:#1A3A6B">% Passing</th>
+              </tr>
+            </thead>
+            <tbody id="rpt_sieveBody">
+              <tr><td colspan="4" style="text-align:center;color:#aaa;padding:3mm;font-size:7pt">Run calculation first</td></tr>
+            </tbody>
+          </table>
+
+          <!-- Classification & Coefficients below table -->
+          <div style="margin-top:2mm;background:#1F6B3A;color:#fff;font-size:7.5pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:1mm;letter-spacing:.5px">CLASSIFICATION & SUMMARY</div>
+          <table style="width:100%;border-collapse:collapse;font-size:7pt">
+            <tbody id="rpt_classBody">
+              <tr><td colspan="4" style="text-align:center;color:#aaa;padding:3mm;font-size:7pt">Run calculation first</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Gradation Chart -->
+        <div style="flex:1.3;min-width:0">
+          <div style="background:#1A3A6B;color:#fff;font-size:7.5pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:1mm;letter-spacing:.5px">GRAIN SIZE DISTRIBUTION CURVE</div>
+          <div style="border:0.5px solid #ccc;border-radius:3px;overflow:hidden;background:#fafafa;min-height:115mm;">
+            <div id="reportChartDiv" style="width:100%;height:115mm;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AUTHORIZATION FOOTER ── -->
+      <div style="border-top:1.5px solid #4a1a8a;margin-top:2mm;padding-top:2mm">
+        <div style="background:#333;color:#fff;font-size:7.5pt;font-weight:700;padding:1mm 3mm;margin-bottom:2mm;letter-spacing:.5px;display:inline-block">AUTHORIZATION FOOTER</div>
+        <table style="width:100%;border-collapse:collapse;font-size:7.5pt">
+          <tr>
+            <td style="width:33%;border:0.5px solid #bbb;padding:2mm 3mm;vertical-align:top">
+              <div style="font-weight:700;color:#4a1a8a;margin-bottom:4mm">Quality Manager</div>
+              <div style="font-size:7pt;color:#555">Name: <span style="border-bottom:0.5px solid #888;display:inline-block;width:28mm">&nbsp;</span></div>
+              <div style="font-size:7pt;color:#555;margin-top:4mm">Signature: <span style="border-bottom:0.5px solid #888;display:inline-block;width:22mm">&nbsp;</span></div>
+              <div style="font-size:7pt;color:#555;margin-top:4mm">Date: <span style="border-bottom:0.5px solid #888;display:inline-block;width:28mm">&nbsp;</span></div>
+            </td>
+            <td style="width:33%;border:0.5px solid #bbb;padding:2mm 3mm;vertical-align:top">
+              <div style="font-weight:700;color:#1F6B3A;margin-bottom:4mm">Technical Manager</div>
+              <div style="font-size:7pt;color:#555">Name: <span style="border-bottom:0.5px solid #888;display:inline-block;width:28mm">&nbsp;</span></div>
+              <div style="font-size:7pt;color:#555;margin-top:4mm">Signature: <span style="border-bottom:0.5px solid #888;display:inline-block;width:22mm">&nbsp;</span></div>
+              <div style="font-size:7pt;color:#555;margin-top:4mm">Date: <span style="border-bottom:0.5px solid #888;display:inline-block;width:28mm">&nbsp;</span></div>
+            </td>
+            <td style="width:33%;border:0.5px solid #bbb;padding:2mm 3mm;vertical-align:top">
+              <div style="font-weight:700;color:#1A3A6B;margin-bottom:4mm">Independent Technical Reviewer<br><span style="font-weight:400;color:#666;font-size:7pt">ISO 17025</span></div>
+              <div style="font-size:7pt;color:#555">Name: <span style="border-bottom:0.5px solid #888;display:inline-block;width:28mm">&nbsp;</span></div>
+              <div style="font-size:7pt;color:#555;margin-top:4mm">Signature: <span style="border-bottom:0.5px solid #888;display:inline-block;width:22mm">&nbsp;</span></div>
+              <div style="font-size:7pt;color:#555;margin-top:4mm">Date: <span style="border-bottom:0.5px solid #888;display:inline-block;width:28mm">&nbsp;</span></div>
+            </td>
+          </tr>
+        </table>
+        <div style="margin-top:2mm;font-size:6.5pt;color:#aaa;text-align:center">
+          Report generated by ASTM D6913-17 Double Separation Calculator — Platform: mohamed742406.github.io
+        </div>
+      </div>
+
+    </div><!-- end #a4Report -->
   </div>
   <!-- END TAB 3 -->
 
@@ -802,7 +967,7 @@ function calculate(){
   let CP1_Md=0;
   if(!isNaN(CP1Mm)&&CP1Mm>0&&!isNaN(wcp)&&wcp>=0){
     CP1_Md=CP1Mm/(1+wcp/100);
-    document.getElementById('cp1md_disp').textContent=CP1_Md.toFixed(3)+' جم';
+    document.getElementById('cp1md_disp').textContent=CP1_Md.toFixed(3)+' g';
     document.getElementById('cp1md').value=CP1_Md;
   } else {
     document.getElementById('cp1md_disp').textContent='—';
@@ -817,7 +982,7 @@ function calculate(){
   let SubS1=0;
   if(!isNaN(SubS1Mm)&&SubS1Mm>0&&!isNaN(SubS1w)&&SubS1w>=0){
     SubS1=SubS1Mm/(1+SubS1w/100);
-    document.getElementById('subs1md_disp').textContent=SubS1.toFixed(3)+' جم';
+    document.getElementById('subs1md_disp').textContent=SubS1.toFixed(3)+' g';
     document.getElementById('subs1md').value=SubS1;
   } else {
     document.getElementById('subs1md_disp').textContent='—';
@@ -830,10 +995,10 @@ function calculate(){
   document.getElementById('subs2md').value=SubS2;
   const FP_Md=FP_Mm/(1+wfp/100);
   const S_Md=CP1_Md+FP_Md;
-  document.getElementById('fpmd_disp').textContent=FP_Md?FP_Md.toFixed(3)+' جم':'—';
-  document.getElementById('smd_disp').textContent=S_Md?S_Md.toFixed(3)+' جم':'—';
+  document.getElementById('fpmd_disp').textContent=FP_Md?FP_Md.toFixed(3)+' g':'—';
+  document.getElementById('smd_disp').textContent=S_Md?S_Md.toFixed(3)+' g':'—';
 
-  if(!S_Md){showStatus('أدخل البيانات الأساسية أولاً',false);return;}
+  if(!S_Md){showStatus('Enter basic data first',false);return;}
 
   /* ── Dynamic Sep lookups ── */
   /* Sep.1=coarser (1st physical sep on whole sample), Sep.2=finer (2nd sep on 1stSubS) */
@@ -883,6 +1048,7 @@ function calculate(){
   const ss2WashedEl=document.getElementById('ss2_washed_md');
   const ss2WashedVal=ss2WashedEl?parseFloat(ss2WashedEl.value):NaN;
   const SubS2eff=(!isNaN(ss2WashedVal)&&ss2WashedVal>0)?ss2WashedVal:SubS2;
+  const d2WashLossFrac=(SubS2>0&&SubS2eff<SubS2)?(SubS2-SubS2eff)/SubS2:0;
 
   const FP1_Md=S_Md-cpAtSep1;
   const FP2_Md=(FP1_Md/SubS1)*(SubS1-ss1AtSep2);
@@ -900,23 +1066,25 @@ function calculate(){
     if(washBar) washBar.style.display='flex';
     const lossGm=SubS2-ss2WashedVal;
     const lossPct=(lossGm/SubS2)*100;
-    if(washLossDisp) washLossDisp.textContent=lossGm.toFixed(2)+' جم';
+    if(washLossDisp) washLossDisp.textContent=lossGm.toFixed(2)+' g';
     if(washLossPct)  washLossPct.textContent=lossPct.toFixed(2)+'%';
-    /* sieve sum check */
-    const sieveSum=[v('ss2_95'),v('ss2_475'),v('ss2_2'),v('ss2_0425'),v('ss2_015'),v('ss2_0075')].reduce((a,b)=>a+b,0);
-    if(sieveSumDisp) sieveSumDisp.textContent=sieveSum.toFixed(2)+' جم';
+    /* sieve sum check — FCMR values are CUMULATIVE retained.
+       Total retained = the No.200 cumulative value (last sieve).
+       Individual retained masses = differences between consecutive values. */
+    const sieveSum=v('ss2_0075'); /* No.200 FCMR = total retained on sieves */
+    if(sieveSumDisp) sieveSumDisp.textContent=sieveSum.toFixed(2)+' g';
     const diff=sieveSum-ss2WashedVal;
     if(sieveCheckDisp){
-      sieveCheckDisp.textContent=(diff>=0?'+':'')+diff.toFixed(2)+' جم';
+      sieveCheckDisp.textContent=(diff>=0?'+':'')+diff.toFixed(2)+' g';
       sieveCheckDisp.style.color=Math.abs(diff)<0.5*ss2WashedVal/100?'#1F6B3A':'#c62828';
     }
     if(washLossNote){
       const absDiff=Math.abs(diff/ss2WashedVal*100);
       washLossNote.style.background=absDiff<0.3?'#e8f5e9':absDiff<1?'#fff3e0':'#ffebee';
       washLossNote.style.color=absDiff<0.3?'#1F6B3A':absDiff<1?'#8B4500':'#c62828';
-      if(absDiff<0.3)      washLossNote.textContent='✅ مجموع المحجوز ≈ وزن بعد الغسيل — البيانات متسقة';
-      else if(absDiff<1)   washLossNote.textContent='⚠️ فرق < 1% — مقبول، تحقق من قراءة الميزان';
-      else                  washLossNote.textContent='❌ فرق > 1% — راجع أوزان المناخل أو وزن بعد الغسيل';
+      if(absDiff<0.3)      washLossNote.textContent='✅ Sum of retained ≈ washed weight — Data consistent';
+      else if(absDiff<1)   washLossNote.textContent='⚠️ Diff < 1% — Acceptable, check balance reading';
+      else                  washLossNote.textContent='❌ Diff > 1% — Check sieve weights or washed weight';
     }
   } else {
     if(washBar) washBar.style.display='none';
@@ -924,10 +1092,16 @@ function calculate(){
 
   const fcmr={'9.5':v('ss2_95'),'4.75':v('ss2_475'),'2':v('ss2_2'),'0.425':v('ss2_0425'),'0.15':v('ss2_015'),'0.075':v('ss2_0075')};
   const partialIds={'9.5':'fp_95','4.75':'fp_475','2':'fp_2','0.425':'fp_0425','0.15':'fp_015','0.075':'fp_0075'};
-  /* % passing in 2ndSubS table — relative to SubS2eff (washed dry weight) */
+  /* % passing in 2ndSubS table — relative to SubS2eff (washed dry weight)
+     For No.200: passing = wash loss / SubS2,Md (material lost = material finer than No.200) */
   Object.keys(fcmr).forEach(k=>{
     const el=document.getElementById(partialIds[k]);
-    if(el) el.textContent=fmtPct((1-fcmr[k]/SubS2eff)*100);
+    if(!el) return;
+    if(k==='0.075'){
+      el.textContent = fmtPct(d2WashLossFrac*100);
+    } else {
+      el.textContent = fmtPct(SubS2eff>0?(1-fcmr[k]/SubS2eff)*100:0);
+    }
   });
 
   /* Build summary rows — fully dynamic */
@@ -959,7 +1133,14 @@ function calculate(){
   const cmrAtSep2=Math.max(cmrSep2Raw,cpAtSep1);
   D2_ALL.filter(mm=>mm<sep2val).forEach(mm=>{
     const fk=String(mm);
-    const cmrRaw=cpAtSep1+(FP1_Md/SubS1)*(ss1AtSep2+(fcmr[fk]||0)*(SubS1-ss1AtSep2)/SubS2eff);
+    /* Correct formula: use SubS2 (full weight before washing) as denominator.
+       Wash loss (all < No.200) passes through ALL sieves, so:
+       passing = (SubS2eff - FCMR + WashLoss) / SubS2 = (SubS2 - FCMR) / SubS2
+       For No.200: fcmrVal = SubS2eff → passing = WashLoss/SubS2 (unified, no special case) */
+    const fcmrVal = fk==='0.075' ? SubS2eff : (fcmr[fk]||0);
+    const cmrRaw = SubS2>0
+      ? cpAtSep1 + (FP1_Md/SubS1) * (ss1AtSep2 + fcmrVal*(SubS1-ss1AtSep2)/SubS2)
+      : cpAtSep1 + (FP1_Md/SubS1) * ss1AtSep2;
     /* CMR must be monotonically non-decreasing as sieve size decreases */
     rows.push({lbl:D2_LBLS[mm],mm,type:'fine',cmr:Math.max(cmrRaw,cmrAtSep2)});
   });
@@ -997,19 +1178,24 @@ function calculate(){
   const cuOkG=!isNaN(_Cu)&&_Cu>=4&&!isNaN(_Cc)&&_Cc>=1&&_Cc<=3;
   const cuOkS=!isNaN(_Cu)&&_Cu>=6&&!isNaN(_Cc)&&_Cc>=1&&_Cc<=3;
   document.getElementById('cucc_check').textContent=
-    (isNaN(_Cu)||isNaN(_Cc))?'—': cuOkG?'✅ GW أو SW': cuOkS?'✅ SW':'❌ GP / SP';
+    (isNaN(_Cu)||isNaN(_Cc))?'N/A — Cu/Cc unavailable':
+    cuOkG?'✅ Well-Graded (GW/SW)': cuOkS?'✅ Well-Graded SW':'❌ Poorly-Graded (GP/SP)';
 
-  showStatus('✅ تم الحساب بنجاح — ASTM D6913-17 Double Separation',true);
+  showStatus('✅ Calculation successful — ASTM D6913-17 Double Separation',true);
   document.getElementById('btnSave').disabled=false;
+  _lastCalcMode = 'double';
 
   runClassification();
   renderChart();
   syncReport();
   updateReportTable();
+  updateReportChart();
 }
 
 /* ═══ Global gradation coefficients ═══ */
 let _gradData=[], _D10=NaN, _D30=NaN, _D60=NaN, _Cu=NaN, _Cc=NaN;
+/* ═══ Last successful calculation mode ═══ */
+let _lastCalcMode = null; // 'double' | 'single'
 
 /* ═══ Log-linear interpolation for Dn ═══ */
 function interpolateDn(data,targetPct){
@@ -1039,7 +1225,7 @@ function getCombinedPassing(mmTarget){
 /* ═══ AASHTO M 145 Classification ═══ */
 function classifyAASHTO(getFn, ll, pl, isNP){
   const p200=getFn(0.075); const p40=getFn(0.425); const p10=getFn(2);
-  if(isNaN(p200)) return {symbol:'—',name:'',gi:'—',detail:'شغّل الحساب أولاً.',use:''};
+  if(isNaN(p200)) return {symbol:'—',name:'',gi:'—',detail:'Run calculation first.',use:''};
   const PI=isNP?0:(!isNaN(ll)&&!isNaN(pl)&&pl<ll?ll-pl:NaN);
   const piOk=!isNaN(PI); const llOk=!isNaN(ll);
   /* Group Index */
@@ -1049,33 +1235,33 @@ function classifyAASHTO(getFn, ll, pl, isNP){
     return Math.max(0,Math.round(gi));
   }
   const aashtoUse={
-    'A-1-a':'رمل وحصى جيد التدرج — ممتاز كأساس','A-1-b':'رمل وحصى جيد التدرج — ممتاز كأساس',
-    'A-3':'رمل ناعم — جيد إلى ممتاز كأساس','A-2-4':'حصى/رمل بناعم قليل — جيد إلى ممتاز',
-    'A-2-5':'حصى/رمل بناعم قليل — جيد إلى ممتاز','A-2-6':'حصى/رمل بناعم طيني — مقبول',
-    'A-2-7':'حصى/رمل بناعم طيني عالي اللدونة — مقبول إلى رديء',
+    'A-1-a':'Well-Graded Gravel/Sand — Excellent subgrade','A-1-b':'Well-Graded Gravel/Sand — Excellent subgrade',
+    'A-3':'Fine Sand — Good to Excellent subgrade','A-2-4':'Gravel/Sand with low fines — Good to Excellent',
+    'A-2-5':'Gravel/Sand with low fines — Good to Excellent','A-2-6':'Gravel/Sand with clayey fines — Fair',
+    'A-2-7':'Gravel/Sand with high-plasticity fines — Fair to Poor',
     'A-4':'تربة طمي — رديء إلى مقبول كأساس','A-5':'طمي لدن عالي — رديء',
-    'A-6':'طين لدن متوسط — رديء','A-7-5':'طين مرن/لدن — رديء جداً','A-7-6':'طين انتفاخي — رديء جداً'
+    'A-6':'Plastic Clay — Poor','A-7-5':'Elastic/Plastic Clay — Very Poor','A-7-6':'Swelling Clay — Very Poor'
   };
   const p10v=isNaN(p10)?100:p10, p40v=isNaN(p40)?100:p40;
   let sym,name,gi=0;
-  if(p200<=15&&p40v<=30&&p10v<=50&&(!piOk||PI<=6)){sym='A-1-a';name='تربة حبيبية خشنة';}
+  if(p200<=15&&p40v<=30&&p10v<=50&&(!piOk||PI<=6)){sym='A-1-a';name='Coarse Granular Soil';}
   else if(p200<=25&&p40v<=50&&(!piOk||PI<=6)){sym='A-1-b';name='تربة حبيبية';}
-  else if(p200<=10&&isNP){sym='A-3';name='رمل ناعم';}
-  else if(p200<=35&&llOk&&piOk&&ll<=40&&PI<=10){sym='A-2-4';name='تربة حبيبية بناعم طمي';gi=calcGI(p200,ll,PI);}
-  else if(p200<=35&&llOk&&piOk&&ll>40&&PI<=10){sym='A-2-5';name='تربة حبيبية بناعم طمي';gi=calcGI(p200,ll,PI);}
-  else if(p200<=35&&llOk&&piOk&&ll<=40&&PI>10){sym='A-2-6';name='تربة حبيبية بناعم طيني';gi=calcGI(p200,ll,PI);}
-  else if(p200<=35&&llOk&&piOk&&ll>40&&PI>10){sym='A-2-7';name='تربة حبيبية بناعم طيني';gi=calcGI(p200,ll,PI);}
+  else if(p200<=10&&isNP){sym='A-3';name='Fine Sand';}
+  else if(p200<=35&&llOk&&piOk&&ll<=40&&PI<=10){sym='A-2-4';name='Granular with Silty Fines';gi=calcGI(p200,ll,PI);}
+  else if(p200<=35&&llOk&&piOk&&ll>40&&PI<=10){sym='A-2-5';name='Granular with Silty Fines';gi=calcGI(p200,ll,PI);}
+  else if(p200<=35&&llOk&&piOk&&ll<=40&&PI>10){sym='A-2-6';name='Granular with Clayey Fines';gi=calcGI(p200,ll,PI);}
+  else if(p200<=35&&llOk&&piOk&&ll>40&&PI>10){sym='A-2-7';name='Granular with Clayey Fines (HP)';gi=calcGI(p200,ll,PI);}
   else if(!llOk||!piOk){
-    if(p200>35) return {symbol:'A-4/A-7?',name:'يلزم LL و PI للتحديد',gi:'—',detail:`% مار No.200=${p200.toFixed(1)}% — أدخل LL و PL`,use:''};
-    return {symbol:'A-2?',name:'يلزم LL و PI',gi:'—',detail:`% مار No.200=${p200.toFixed(1)}%`,use:''};
+    if(p200>35) return {symbol:'A-4/A-7?',name:'LL and PI required',gi:'—',detail:`%Passing No.200=${p200.toFixed(1)}% — Enter LL and PL`,use:''};
+    return {symbol:'A-2?',name:'LL and PI required',gi:'—',detail:`%Passing No.200=${p200.toFixed(1)}%`,use:''};
   }
   else if(p200>35&&ll<=40&&PI<=10){sym='A-4';name='تربة طمي';gi=calcGI(p200,ll,PI);}
   else if(p200>35&&ll>40&&PI<=10){sym='A-5';name='طمي عالي اللدونة';gi=calcGI(p200,ll,PI);}
-  else if(p200>35&&ll<=40&&PI>10){sym='A-6';name='تربة طينية';gi=calcGI(p200,ll,PI);}
-  else if(p200>35&&ll>40&&PI>LL-30){sym='A-7-6';name='طين انتفاخي';gi=calcGI(p200,ll,PI);}
-  else{sym='A-7-5';name='طين مرن';gi=calcGI(p200,ll,PI);}
-  const llStr=llOk?`LL=${ll.toFixed(0)}% ، `:'' ; const piStr=piOk?`PI=${PI.toFixed(0)}% ، `:'NP ، ';
-  return {symbol:sym,name,gi,detail:`${llStr}${piStr}% مار No.200=${p200.toFixed(1)}%`,use:aashtoUse[sym]||''};
+  else if(p200>35&&ll<=40&&PI>10){sym='A-6';name='Plastic Clay Soil';gi=calcGI(p200,ll,PI);}
+  else if(p200>35&&ll>40&&PI>LL-30){sym='A-7-6';name='Swelling Clay';gi=calcGI(p200,ll,PI);}
+  else{sym='A-7-5';name='Elastic Clay';gi=calcGI(p200,ll,PI);}
+  const llStr=llOk?`LL=${ll.toFixed(0)}%, `:''; const piStr=piOk?`PI=${PI.toFixed(0)}%, `:'NP, ';
+  return {symbol:sym,name,gi,detail:`${llStr}${piStr}%Passing No.200=${p200.toFixed(1)}%`,use:aashtoUse[sym]||''};
 }
 
 /* ═══ Render classification table ═══ */
@@ -1083,12 +1269,12 @@ function renderClassTable(uscs, aashto, tbodyId){
   const tbody=document.getElementById(tbodyId);
   if(!tbody) return;
   const uscsUse={
-    GW:'أساسات، ردم، رصف',GP:'أساسات، ردم',GW_GC:'أساسات مع طين',GW_GM:'أساسات مع طمي',
-    GP_GC:'أساسات/ردم',GP_GM:'أساسات/ردم',SW:'أساسات، ردم، رصف',SP:'أساسات، ردم',
-    SW_SC:'أساسات مع طين',SW_SM:'أساسات مع طمي',SP_SC:'ردم وأساسات',SP_SM:'ردم وأساسات',
-    GM:'أساسات، حواجز مائية',GC:'حواجز، أساسات',SM:'أساسات، ردم',SC:'حواجز، أساسات',
-    ML:'ردم محدود',CL:'حواجز، أساسات',MH:'ردم (يُتجنب)',CH:'حواجز (انتباه للانتفاخ)',
-    'CL-ML':'مراجعة مطلوبة','NP':'—'
+    GW:'Foundation, Fill, Pavement Base',GP:'Foundation, Fill',GW_GC:'Foundation with Clay',GW_GM:'Foundation with Silt',
+    GP_GC:'Foundation/Fill',GP_GM:'Foundation/Fill',SW:'Foundation, Fill, Pavement Base',SP:'Foundation, Fill',
+    SW_SC:'Foundation with Clay',SW_SM:'Foundation with Silt',SP_SC:'Fill & Foundation',SP_SM:'Fill & Foundation',
+    GM:'Foundation, Drainage Barrier',GC:'Barrier, Foundation',SM:'Foundation, Fill',SC:'Barrier, Foundation',
+    ML:'Limited Fill',CL:'Barrier, Foundation',MH:'Fill (avoid)',CH:'Barrier (watch for swell)',
+    'CL-ML':'Review required','NP':'—'
   };
   const sym=uscs.symbol.replace(/-/g,'_');
   const uscsRow=`<tr style="background:#f3e5ff">
@@ -1118,29 +1304,29 @@ function classifySoil(){
   const p200=getCombinedPassing(0.075);
   const p4  =getCombinedPassing(4.75);
 
-  if(isNaN(p200)) return {symbol:'—',name:'',detail:'شغّل الحساب أولاً حتى تتوفر نتائج No.200 المجمعة.'};
+  if(isNaN(p200)) return {symbol:'—',name:'',detail:'Run calculation first to get combined No.200 results.'};
 
   const isNP=(pf==='no');
 
   /* ── Fine-grained ≥50% passes No.200 ── */
   if(p200>=50){
     if(isNP){
-      if(isNaN(ll)) return {symbol:'ML',name:'ML — Silt طمي',detail:`% مار No.200=${p200.toFixed(1)}% ، NP — LL غير محدد، تصنيف ML افتراضي.`};
+      if(isNaN(ll)) return {symbol:'ML',name:'ML — Silt (Low Plasticity)',detail:`%Passing No.200=${p200.toFixed(1)}% — NP, LL unknown, default ML.`};
       const sym=ll<50?'ML':'MH';
-      const nm=ll<50?'ML — Silt طمي':'MH — Elastic Silt طمي مرن';
-      return {symbol:sym,name:nm,detail:`% مار No.200=${p200.toFixed(1)}% ، LL=${ll.toFixed(1)}% ، NP — Fine-grained (ASTM D2487).`};
+      const nm=ll<50?'ML — Silt (Low Plasticity)':'MH — Elastic Silt (High Plasticity)';
+      return {symbol:sym,name:nm,detail:`%Passing No.200=${p200.toFixed(1)}%, LL=${ll.toFixed(1)}% — NP — Fine-grained (ASTM D2487).`};
     }
     if(isNaN(ll)||isNaN(pl))
-      return {symbol:'—',name:'أدخل LL و PL',detail:'لازم تدخل LL و PL لتصنيف التربة الناعمة.'};
+      return {symbol:'—',name:'Enter LL and PL',detail:'LL and PL required for fine-grained classification.'};
     if(pl>=ll)
-      return {symbol:'⚠️',name:'بيانات غير منطقية',detail:'PL لازم يكون أصغر من LL.'};
+      return {symbol:'⚠️',name:'Inconsistent data',detail:'PL must be less than LL.'};
     const pi=ll-pl, aLine=0.73*(ll-20);
     let symbol='',name='';
     const borderline=(ll>=12&&ll<=25&&pi>=4&&pi<=7);
     if(borderline){symbol='CL-ML';name='Lean Clay / Silt (Borderline)';}
-    else if(ll<50){symbol=pi>aLine?'CL':'ML';name=pi>aLine?'CL — Lean Clay طين هزيل':'ML — Silt طمي';}
-    else {symbol=pi>aLine?'CH':'MH';name=pi>aLine?'CH — Fat Clay طين دهني':'MH — Elastic Silt طمي مرن';}
-    return {symbol,name,detail:`LL=${ll.toFixed(1)}% ، PL=${pl.toFixed(1)}% ، PI=${pi.toFixed(1)}% ، خط-A=${aLine.toFixed(1)}% — Fine-grained (ASTM D2487).`};
+    else if(ll<50){symbol=pi>aLine?'CL':'ML';name=pi>aLine?'CL — Lean Clay (Low Plasticity)':'ML — Silt (Low Plasticity)';}
+    else {symbol=pi>aLine?'CH':'MH';name=pi>aLine?'CH — Fat Clay (High Plasticity)':'MH — Elastic Silt (High Plasticity)';}
+    return {symbol,name,detail:`LL=${ll.toFixed(1)}%, PL=${pl.toFixed(1)}%, PI=${pi.toFixed(1)}%, A-Line=${aLine.toFixed(1)}% — Fine-grained (ASTM D2487).`};
   }
 
   /* ── Coarse-grained <50% passes No.200 ── */
@@ -1160,40 +1346,45 @@ function classifySoil(){
   const ccAvail=!isNaN(_Cc)&&isFinite(_Cc);
   const wellGraded=cuAvail&&ccAvail&&(groupType==='G'?(_Cu>=4&&_Cc>=1&&_Cc<=3):(_Cu>=6&&_Cc>=1&&_Cc<=3));
 
-  let detail=`% مار No.200=${fines.toFixed(1)}% ، % مار No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
-  if(cuAvail) detail+=` ، Cᵤ=${_Cu.toFixed(2)}`;
-  if(ccAvail) detail+=` ، Cc=${_Cc.toFixed(2)}`;
-  if(isNP) detail+=' ، NP (غير لدنة → M-type)';
-  else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll) detail+=` ، PI=${(ll-pl).toFixed(1)}%`;
+  let detail=`%Passing No.200=${fines.toFixed(1)}%, %Passing No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
+  if(cuAvail) detail+=`, Cu=${_Cu.toFixed(2)}`;
+  if(ccAvail) detail+=`, Cc=${_Cc.toFixed(2)}`;
+  if(isNP) detail+=' — NP (Non-Plastic → M-type)';
+  else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll) detail+=`, PI=${(ll-pl).toFixed(1)}%`;
 
   if(fines<5){
-    if(!cuAvail||!ccAvail)
-      return {symbol:groupType+'?',name:`${groupType==='G'?'Gravel':'Sand'} — يلزم D10/D30/D60`,detail:detail+' — أقل من 5% ناعم. تحقق من بيانات المنخل لحساب Cu و Cc.'};
+    if(!cuAvail||!ccAvail){
+      /* Cu/Cc unavailable — show GP/GW pending with note */
+      const sym=groupType==='G'?'G*':'S*';
+      return {symbol:sym,
+        name:`${groupType==='G'?'Gravel':'Sand'} — D10, D30 & D60 required`,
+        detail:detail+' — <5% fines. D10/D30/D60 not interpolated (check gradation data). Assuming Poorly-Graded until Cu & Cc available.'};
+    }
     const sym=wellGraded?groupType+'W':groupType+'P';
-    const names={GW:'GW — حصى متدرج جيداً',GP:'GP — حصى سيء التدرج',SW:'SW — رمل متدرج جيداً',SP:'SP — رمل سيء التدرج'};
-    return {symbol:sym,name:names[sym]||sym,detail:detail+(wellGraded?' ✅ Well-Graded':' ❌ Poorly-Graded')};
+    const names={GW:'GW — Well-Graded Gravel',GP:'GP — Poorly-Graded Gravel',SW:'SW — Well-Graded Sand',SP:'SP — Poorly-Graded Sand'};
+    return {symbol:sym,name:names[sym]||sym,detail:detail+(wellGraded?' — Well-Graded':' — Poorly-Graded')};
   }
 
   if(fines>=5&&fines<=12){
     if(!cuAvail||!ccAvail){
       return {symbol:`${groupType}W-${groupType}${finesSymbol}/${groupType}P-${groupType}${finesSymbol}`,
-        name:'Dual Symbol (يلزم Cu و Cc للتحديد)',detail:detail+' — 5%–12% ناعم.'};
+        name:'Dual Symbol (Cu and Cc required)',detail:detail+' — 5%–12% fines.'};
     }
     const gradSym=wellGraded?groupType+'W':groupType+'P';
     const sym=`${gradSym}-${groupType}${finesSymbol}`;
     const nameMap={
-      'GW-GC':'GW-GC حصى متدرج + طيني','GW-GM':'GW-GM حصى متدرج + طمي',
-      'GP-GC':'GP-GC حصى سيء + طيني',  'GP-GM':'GP-GM حصى سيء + طمي',
-      'SW-SC':'SW-SC رمل متدرج + طيني','SW-SM':'SW-SM رمل متدرج + طمي',
-      'SP-SC':'SP-SC رمل سيء + طيني',  'SP-SM':'SP-SM رمل سيء + طمي'
+      'GW-GC':'GW-GC Well-Graded Gravel with Clay','GW-GM':'GW-GM Well-Graded Gravel with Silt',
+      'GP-GC':'GP-GC Poorly-Graded Gravel with Clay',  'GP-GM':'GP-GM Poorly-Graded Gravel with Silt',
+      'SW-SC':'SW-SC Well-Graded Sand with Clay','SW-SM':'SW-SM Well-Graded Sand with Silt',
+      'SP-SC':'SP-SC Poorly-Graded Sand with Clay',  'SP-SM':'SP-SM Poorly-Graded Sand with Silt'
     };
     return {symbol:sym,name:nameMap[sym]||sym,detail:detail+' — Dual Symbol.'};
   }
 
   const sym=groupType+finesSymbol;
-  const nameMap={GC:'GC — Clayey Gravel حصى طيني',GM:'GM — Silty Gravel حصى طمي',
-                 SC:'SC — Clayey Sand رمل طيني',  SM:'SM — Silty Sand رمل طمي'};
-  return {symbol:sym,name:nameMap[sym]||sym,detail:detail+' — أكثر من 12% ناعم.'};
+  const nameMap={GC:'GC — Clayey Gravel',GM:'GM — Silty Gravel',
+                 SC:'SC — Clayey Sand',  SM:'SM — Silty Sand'};
+  return {symbol:sym,name:nameMap[sym]||sym,detail:detail+' — >12% fines.'};
 }
 
 function runClassification(){
@@ -1250,7 +1441,7 @@ function renderChart(){
   });
   const el=document.getElementById('gradChart');
   if(!data.length){
-    if(el) el.innerHTML='<div style="text-align:center;color:#888;padding:40px">أدخل البيانات واضغط "احسب النتائج" أولاً</div>';
+    if(el) el.innerHTML='<div style="text-align:center;color:#888;padding:40px">Enter data and click "Calculate" </div>';
     return;
   }
   data.sort((a,b)=>b.mm-a.mm);
@@ -1360,7 +1551,7 @@ function resetForm(){
    'fp_95','fp_475','fp_2','fp_0425','fp_015','fp_0075'].forEach(id=>
     document.getElementById(id).textContent='—');
   document.getElementById('summaryBody').innerHTML=
-    '<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr>';
+    '<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">Enter data and click "Calculate"</td></tr>';
   _gradData=[];_D10=NaN;_D30=NaN;_D60=NaN;_Cu=NaN;_Cc=NaN;
   ['d10_val','d30_val','d60_val','cu_val','cc_val'].forEach(id=>
     document.getElementById(id).textContent='—');
@@ -1368,14 +1559,17 @@ function resetForm(){
   const chartEl=document.getElementById('gradChart');
   if(chartEl){
     if(typeof Plotly!=='undefined') try{Plotly.purge(chartEl);}catch(e){}
-    chartEl.innerHTML='<div style="text-align:center;color:#888;padding:60px 20px;font-size:13px">أدخل البيانات واضغط "احسب النتائج" لعرض منحنى التدرج</div>';
+    chartEl.innerHTML='<div style="text-align:center;color:#888;padding:60px 20px;font-size:13px">Enter data and click "Calculate" </div>';
   }
   document.getElementById('classResultBox').innerHTML=
-    '<div class="class-empty">أدخل البيانات واضغط "احسب النتائج".</div>';
-  document.getElementById('classInputsUsed').textContent='لم يتم الحساب بعد.';
-  const rc2=document.getElementById('reportClass');if(rc2) rc2.textContent='التصنيف: —';
+    '<div class="class-empty">Enter data and click "Calculate".</div>';
+  document.getElementById('classInputsUsed').textContent='No calculation performed yet.';
+  const rc2=document.getElementById('reportClass');if(rc2) rc2.textContent='Classification: —';
   const st=document.getElementById('status');st.textContent='';st.className='';
   document.getElementById('btnSave').disabled=true;
+  /* ── Reset report panel ── */
+  _lastCalcMode=null;
+  _resetReportPanel();
 }
 
 /* ═══ Session save/load ═══ */
@@ -1386,7 +1580,7 @@ function saveSession(){
   const blob=new Blob([JSON.stringify(session,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),a=document.createElement('a'),n=new Date();
   a.href=url;a.download=`D6913_Session_${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}.json`;
-  a.click();URL.revokeObjectURL(url);showStatus('✅ تم حفظ بيانات الجلسة بنجاح!',true);
+  a.click();URL.revokeObjectURL(url);showStatus('✅ Session saved successfully!',true);
 }
 function loadSession(event){
   const file=event.target.files[0];if(!file)return;
@@ -1394,10 +1588,10 @@ function loadSession(event){
   r.onload=e=>{
     try{
       const s=JSON.parse(e.target.result);
-      if(!s.inputs)throw new Error('ملف غير صالح');
+      if(!s.inputs)throw new Error('Invalid file');
       Object.entries(s.inputs).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val;});
       calculate();syncReport();updateReportTable();updateReportChart();
-      showStatus('✅ تم استيراد الجلسة بنجاح!',true);
+      showStatus('✅ Session loaded successfully!',true);
     }catch(err){showStatus('❌ '+err.message,false);}
     event.target.value='';
   };
@@ -1407,7 +1601,7 @@ function saveResults(){
   const html=`<html><head><meta charset="utf-8"><title>D6913 Report</title></head><body><h1>تقرير ASTM D6913</h1><p>افتح الصفحة واضغط طباعة للحصول على نسخة ورقية.</p></body></html>`;
   const blob=new Blob([html],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a'),n=new Date();
   a.href=url;a.download=`D6913_Results_${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}.html`;
-  a.click();URL.revokeObjectURL(url);showStatus('✅ تم تحميل تقرير HTML',true);
+  a.click();URL.revokeObjectURL(url);showStatus('✅ HTML report downloaded',true);
 }
 
 /* ═══ Report helpers ═══ */
@@ -1425,62 +1619,378 @@ function getProjectInfo(){
     sieveType:document.getElementById('sieveType')?.value||''
   };
 }
+
+/* Utility: set text content of an element safely */
+function rptSet(id, val){ const el=document.getElementById(id); if(el) el.textContent=val||'—'; }
+
+/* Detect which test was calculated — uses explicit mode flag set after each calculation */
+function _rptActiveTab(){
+  /* Primary: use the explicit flag set after each successful calculation */
+  if(_lastCalcMode) return _lastCalcMode;
+  /* Fallback: detect from populated data arrays */
+  if(_gradData && _gradData.length)   return 'double';
+  if(_s1GradData && _s1GradData.length) return 'single';
+  /* Last resort: check display text */
+  const d2=document.getElementById('smd_disp')?.textContent||'';
+  const s1=document.getElementById('s1_smd_disp')?.textContent||'';
+  if(d2&&d2!=='—'&&d2.trim()!=='') return 'double';
+  if(s1&&s1!=='—'&&s1.trim()!=='') return 'single';
+  return null;
+}
+
 function syncReport(){
   const info=getProjectInfo();
-  const meta=document.getElementById('reportMeta');
-  if(meta){
-    meta.innerHTML=`
-      <div><b>العميل:</b> ${info.clientName||'—'}</div>
-      <div><b>المشروع:</b> ${info.projectName||'—'}</div>
-      <div><b>الموقع:</b> ${info.siteLocation||'—'}</div>
-      <div><b>رقم العينة:</b> ${info.sampleNo||'—'}</div>
-      <div><b>استلام العينة:</b> ${info.sampleDate||'—'}</div>
-      <div><b>تاريخ الاختبار:</b> ${info.testDate||'—'}</div>
-      <div><b>الفني:</b> ${info.technicianName||'—'}</div>
-      <div><b>الظروف البيئية:</b> ${info.envConditions||'—'}</div>
-      <div><b>طريقة الاختبار:</b> ${info.methodUsed||'—'}</div>
-    `;
+  const today=new Date().toLocaleDateString('en-GB');
+  rptSet('rpt_clientName',  info.clientName  ||'—');
+  rptSet('rpt_projectName', info.projectName ||'—');
+  rptSet('rpt_siteLocation',info.siteLocation||'—');
+  rptSet('rpt_sampleNo',    info.sampleNo    ||'—');
+  rptSet('rpt_sampleDate',  info.sampleDate  ||'—');
+  rptSet('rpt_testDate',    info.testDate    ||'—');
+  rptSet('rpt_technician',  info.technicianName||'—');
+  rptSet('rpt_env',         info.envConditions||'—');
+  rptSet('rpt_method',      info.methodUsed  ||'ASTM D6913-17');
+  rptSet('rpt_reportDate',  today);
+
+  const mode=_rptActiveTab();
+
+  if(mode==='double'){
+    /* ── Double Separation ── */
+    rptSet('rpt_sieveType', 'Composite Sieving — Double Separation');
+    /* Show Sep.2 row */
+    const sep2Row=document.getElementById('rpt_sep2_row');
+    if(sep2Row) sep2Row.style.display='';
+    /* Update report header subtitle */
+    const rptSubtitle=document.getElementById('rpt_header_subtitle');
+    if(rptSubtitle) rptSubtitle.textContent='ASTM D6913-17 — Composite Sieving / Double Separation';
+    const sep1El=document.getElementById('sep1');
+    const sep2El=document.getElementById('sep2');
+    if(sep1El) rptSet('rpt_sep1', sep1El.options[sep1El.selectedIndex]?.text||'—');
+    if(sep2El) rptSet('rpt_sep2', sep2El.options[sep2El.selectedIndex]?.text||'—');
+    rptSet('rpt_smd',   document.getElementById('smd_disp')?.textContent||'—');
+    rptSet('rpt_subs1', document.getElementById('subs1md_disp')?.textContent||'—');
+    rptSet('rpt_cscf1', document.getElementById('cscf1_val')?.textContent||'—');
+    rptSet('rpt_cscf2', document.getElementById('cscf2_val')?.textContent||'—');
+    /* Classification + fractions + D values table built together */
+    _syncReportClassification('classResultBox','aashtoResultBox');
+    _syncReportFractions(getCombinedPassing);
+
+  } else if(mode==='single'){
+    /* ── Single Separation ── */
+    rptSet('rpt_sieveType', 'Composite Sieving — Single Separation');
+    /* Hide Sep.2 row */
+    const sep2Row=document.getElementById('rpt_sep2_row');
+    if(sep2Row) sep2Row.style.display='none';
+    /* Update report header subtitle */
+    const rptSubtitle=document.getElementById('rpt_header_subtitle');
+    if(rptSubtitle) rptSubtitle.textContent='ASTM D6913-17 — Composite Sieving / Single Separation';
+    const sepEl=document.getElementById('s1_sep');
+    if(sepEl) rptSet('rpt_sep1', sepEl.options[sepEl.selectedIndex]?.text||'—');
+    rptSet('rpt_sep2', 'N/A — Single Sep');
+    rptSet('rpt_smd',   document.getElementById('s1_smd_disp')?.textContent||'—');
+    rptSet('rpt_subs1', document.getElementById('s1_fpmd_disp')?.textContent||'—');
+    rptSet('rpt_cscf1', document.getElementById('s1_cscf_val')?.textContent||'—');
+    rptSet('rpt_cscf2', 'N/A');
+    /* Classification + fractions + D values table built together */
+    _syncReportClassification('s1_classResultBox','s1_aashtoResultBox');
+    _syncReportFractions(s1_getCombinedPassing);
   }
-  const repMethod=document.getElementById('repMethod');if(repMethod)repMethod.textContent=info.methodUsed||'—';
-  const repSieving=document.getElementById('repSieving');if(repSieving)repSieving.textContent=info.sieveType||'—';
-  const repEnv=document.getElementById('repEnv');if(repEnv)repEnv.textContent=info.envConditions||'—';
 }
+
+function _syncReportClassification(uscsBoxId, aashtoBoxId){
+  const classBox=document.getElementById(uscsBoxId);
+  let uscsSymbol='—', uscsName='—';
+  if(classBox){
+    const badge=classBox.querySelector('.class-badge');
+    const name =classBox.querySelector('.class-name');
+    if(badge){ uscsSymbol=badge.textContent.trim(); }
+    if(name){  uscsName  =name.textContent.trim(); }
+    else if(!badge){ const t=classBox.textContent.trim(); uscsSymbol=t||'—'; uscsName=''; }
+  }
+  const aashtoBox=document.getElementById(aashtoBoxId);
+  let aashtoSymbol='—', aashtoName='—';
+  if(aashtoBox){
+    const badge=aashtoBox.querySelector('.class-badge');
+    const name =aashtoBox.querySelector('.class-name');
+    const gi   =aashtoBox.querySelector('div[style*="font-size:11px"]');
+    if(badge){ aashtoSymbol=badge.textContent.trim(); }
+    if(name){  aashtoName  =name.textContent.trim()+(gi?' — GI='+gi.textContent.trim():''); }
+    else if(!badge){ const t=aashtoBox.textContent.trim(); aashtoSymbol=t||'—'; aashtoName=''; }
+  }
+  /* Store for use in _syncReportFractions */
+  _rpt_uscsSymbol=uscsSymbol; _rpt_uscsName=uscsName;
+  _rpt_aashtoSymbol=aashtoSymbol; _rpt_aashtoName=aashtoName;
+}
+
+let _rpt_uscsSymbol='—',_rpt_uscsName='—',_rpt_aashtoSymbol='—',_rpt_aashtoName='—';
+
+function _syncReportFractions(getFn){
+  const p475 =getFn(4.75);
+  const p0075=getFn(0.075);
+  const gravel=(!isNaN(p475)&&!isNaN(p0075))?(100-p475).toFixed(1)+'%':'—';
+  const sand  =(!isNaN(p475)&&!isNaN(p0075))?(p475-p0075).toFixed(1)+'%':'—';
+  const fines =(!isNaN(p0075))?p0075.toFixed(1)+'%':'—';
+
+  /* Get Cu/Cc/D values from the appropriate mode */
+  const mode=_rptActiveTab();
+  const d10 = mode==='single'?(document.getElementById('s1_d10_val')?.textContent||'—'):(document.getElementById('d10_val')?.textContent||'—');
+  const d30 = mode==='single'?(document.getElementById('s1_d30_val')?.textContent||'—'):(document.getElementById('d30_val')?.textContent||'—');
+  const d60 = mode==='single'?(document.getElementById('s1_d60_val')?.textContent||'—'):(document.getElementById('d60_val')?.textContent||'—');
+  const cu  = mode==='single'?(document.getElementById('s1_cu_val')?.textContent||'—') :(document.getElementById('cu_val')?.textContent||'—');
+  const cc  = mode==='single'?(document.getElementById('s1_cc_val')?.textContent||'—') :(document.getElementById('cc_val')?.textContent||'—');
+  const cucc= mode==='single'?(document.getElementById('s1_cucc_check')?.textContent||'—'):(document.getElementById('cucc_check')?.textContent||'—');
+
+  /* Build the classification table dynamically */
+  const P='padding:1mm 1.5mm;border:0.5px solid #ccc;';
+  const L=(col,txt)=>`<td style="${P}font-weight:700;color:${col};width:22%">${txt}</td>`;
+  const V=(txt,ex='')=>`<td style="${P}text-align:center;${ex}">${txt}</td>`;
+  const rows=`
+    <tr style="background:#f5f0ff">
+      ${L('#5B2D8E','USCS')}
+      <td style="${P}font-weight:900;color:#5B2D8E;text-align:center;width:16%">${_rpt_uscsSymbol}</td>
+      <td colspan="2" style="${P}font-weight:700;color:#5B2D8E">${_rpt_uscsName}</td>
+    </tr>
+    <tr style="background:#fff3e0">
+      ${L('#8B4500','AASHTO')}
+      <td style="${P}font-weight:900;color:#8B4500;text-align:center">${_rpt_aashtoSymbol}</td>
+      <td colspan="2" style="${P}color:#8B4500">${_rpt_aashtoName}</td>
+    </tr>
+    <tr style="background:#e8f5e9">
+      ${L('#1F6B3A','D&#x2081;&#x2080;')}${V(d10)}
+      ${L('#1F6B3A','D&#x2083;&#x2080;')}${V(d30)}
+    </tr>
+    <tr style="background:#e8f5e9">
+      ${L('#1F6B3A','D&#x2086;&#x2080;')}${V(d60)}
+      ${L('#8B4500','C&#x1D64;')}${V(cu)}
+    </tr>
+    <tr style="background:#fff9c4">
+      ${L('#8B4500','Cc')}${V(cc)}
+      ${L('#1A3A6B','Well-Graded?')}
+      <td style="${P}text-align:center;font-size:6.5pt">${cucc}</td>
+    </tr>
+    <tr style="background:#e3f2fd">
+      ${L('#1A3A6B','% Gravel')}${V(gravel,'font-weight:700')}
+      ${L('#1A3A6B','% Sand')}${V(sand,'font-weight:700')}
+    </tr>
+    <tr style="background:#e3f2fd">
+      ${L('#1A3A6B','% Fines')}
+      <td colspan="3" style="${P}text-align:center;font-weight:700">${fines}</td>
+    </tr>`;
+  const tb=document.getElementById('rpt_classBody');
+  if(tb) tb.innerHTML=rows;
+}
+
+/* getCombinedPassing for single-sep results */
+function s1_getCombinedPassing(mmTarget){
+  const cells=document.querySelectorAll('#s1_summaryBody tr td[data-mm]');
+  for(const td of cells){
+    if(Math.abs(parseFloat(td.getAttribute('data-mm'))-mmTarget)<0.0001){
+      const val=parseFloat(td.textContent.replace('%','').trim());
+      return isNaN(val)?NaN:val;
+    }
+  }
+  return NaN;
+}
+
 function updateReportTable(){
-  const body=document.getElementById('summaryBody');
-  const wrap=document.getElementById('reportTableWrap');
-  if(!body||!wrap)return;
-  wrap.innerHTML='';
-  const tbl=document.createElement('table');
-  tbl.style.cssText='width:100%;border-collapse:collapse;font-size:10px';
-  tbl.innerHTML='<thead><tr><th style="background:#e8d5f5;border:1px solid #ccc;padding:4px">المنخل</th><th style="background:#e8d5f5;border:1px solid #ccc;padding:4px">المقاس (mm)</th><th style="background:#e8d5f5;border:1px solid #ccc;padding:4px">CMR</th><th style="background:#e8d5f5;border:1px solid #ccc;padding:4px">% مار مجمع</th></tr></thead>';
-  const tb=document.createElement('tbody');
-  body.querySelectorAll('tr').forEach(tr=>{
+  const mode=_rptActiveTab();
+  const srcId = mode==='single' ? 's1_summaryBody' : 'summaryBody';
+  const body=document.getElementById(srcId);
+  const tbody=document.getElementById('rpt_sieveBody');
+  if(!body||!tbody)return;
+  tbody.innerHTML='';
+  const rows=body.querySelectorAll('tr');
+  let oddRow=false;
+  rows.forEach((tr,i)=>{
     const tds=tr.querySelectorAll('td');
     if(tds.length>=4){
+      oddRow=!oddRow;
       const row=document.createElement('tr');
-      row.innerHTML=`<td style="border:1px solid #ddd;padding:4px;text-align:center">${tds[0].innerText}</td><td style="border:1px solid #ddd;padding:4px;text-align:center">${tds[1].innerText}</td><td style="border:1px solid #ddd;padding:4px;text-align:center">${tds[2].innerText}</td><td style="border:1px solid #ddd;padding:4px;text-align:center;font-weight:700">${tds[3].innerText}</td>`;
-      tb.appendChild(row);
+      row.style.background=oddRow?'#fff':'#f8f8ff';
+      const passPct=tds[3].innerText||'—';
+      const lbl=tds[0].innerText||'';
+      const isSep=lbl.includes('Sep');
+      const tdStyle=`border:0.5px solid #ccc;padding:0.8mm 1.5mm;text-align:center;${isSep?'background:#e8d5f5;font-weight:700':''}`;
+      row.innerHTML=
+        `<td style="${tdStyle}">${tds[0].innerText}</td>`+
+        `<td style="${tdStyle}">${tds[1].innerText}</td>`+
+        `<td style="${tdStyle}">${tds[2].innerText}</td>`+
+        `<td style="${tdStyle};font-weight:700;color:#1A3A6B">${passPct}</td>`;
+      tbody.appendChild(row);
     }
   });
-  tbl.appendChild(tb);wrap.appendChild(tbl);
-}
-function updateReportChart(){
-  const chart=document.querySelector('#gradChart .js-plotly-plot');
-  const img=document.getElementById('reportChartImg');
-  if(chart&&window.Plotly){
-    Plotly.toImage(chart,{format:'png',width:1200,height:700}).then(url=>{img.src=url;});
+  if(!tbody.children.length){
+    tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:#aaa;padding:3mm;font-size:7pt">Run calculation first</td></tr>';
   }
 }
+
+function _buildReportChartLayout(data){
+  /* Build Plotly layout for report chart — compact version */
+  const sieveRefs=[
+    {mm:75,label:'3"'},{mm:19,label:'¾"'},{mm:9.5,label:'⅜"'},
+    {mm:4.75,label:'No.4'},{mm:2,label:'No.10'},{mm:0.425,label:'No.40'},{mm:0.075,label:'No.200'}
+  ];
+  const vShapes=sieveRefs.map(s=>({type:'line',x0:s.mm,x1:s.mm,y0:0,y1:100,line:{color:'#ddd',dash:'dot',width:1}}));
+  const hShapes=[10,30,60,90].map(y=>({type:'line',x0:0.04,x1:150,y0:y,y1:y,line:{color:'#e8e8e8',dash:'dot',width:1}}));
+  const trace={
+    x:data.map(d=>d.mm), y:data.map(d=>d.pass),
+    text:data.map(d=>d.pass.toFixed(1)+'%'),
+    mode:'lines+markers+text',
+    textposition:'top center',
+    textfont:{size:8,color:'#4a1a8a'},
+    line:{color:'#5B2D8E',width:2.5},
+    marker:{size:7,color:'#1F6B3A'},
+    hovertemplate:'%{x} mm<br>%{y:.1f}%<extra></extra>',
+    name:''
+  };
+  const layout={
+    margin:{l:45,r:10,t:15,b:50},
+    paper_bgcolor:'#fff', plot_bgcolor:'#fafafa',
+    xaxis:{
+      type:'log', autorange:false, range:[2.18,-1.40],
+      gridcolor:'#eee', zeroline:false,
+      tickvals:[75,50,25,19,9.5,4.75,2,0.425,0.075],
+      ticktext:['75','50','25','19','9.5','4.75','2','0.425','0.075'],
+      tickangle:-45, tickfont:{size:8},
+      title:{text:'Particle Size (mm)',font:{size:9}}
+    },
+    yaxis:{
+      range:[-6,110], gridcolor:'#eee', zeroline:true,
+      tickfont:{size:8},
+      title:{text:'% Passing',font:{size:9}}
+    },
+    shapes:[...vShapes,...hShapes],
+    showlegend:false
+  };
+  return {trace, layout};
+}
+
+function updateReportChart(){
+  const mode=_rptActiveTab();
+  const div=document.getElementById('reportChartDiv');
+  if(!window.Plotly||!div) return;
+
+  /* Get gradation data — prefer explicit mode, fallback to whichever array has data */
+  let data=[];
+  if(mode==='single'){
+    data=[...(_s1GradData||[])];
+  } else if(mode==='double'){
+    data=[...(_gradData||[])];
+  } else {
+    /* mode unknown — use whichever array is populated */
+    data=(_gradData&&_gradData.length) ? [..._gradData] :
+         (_s1GradData&&_s1GradData.length) ? [..._s1GradData] : [];
+  }
+
+  /* If global data still empty, try reading from summary table */
+  if(!data.length){
+    const srcId = mode==='single' ? 's1_summaryBody' : 'summaryBody';
+    const rows=Array.from(document.querySelectorAll('#'+srcId+' tr'));
+    rows.forEach(r=>{
+      const tds=r.querySelectorAll('td');
+      if(tds.length>=4){
+        const mm=parseFloat(tds[1]?.innerText);
+        const pass=parseFloat((tds[3]?.innerText||'').replace('%','').trim());
+        if(!isNaN(mm)&&!isNaN(pass)&&isFinite(pass)) data.push({mm,pass});
+      }
+    });
+  }
+
+  if(!data.length){
+    div.innerHTML='<div style="text-align:center;color:#aaa;padding:40px;font-size:8pt">Run calculation first </div>';
+    return;
+  }
+
+  data.sort((a,b)=>b.mm-a.mm);
+  const {trace,layout}=_buildReportChartLayout(data);
+  Plotly.react(div,[trace],layout,{responsive:true,displayModeBar:false,staticPlot:true});
+}
+
 function printReport(){
-  syncReport();updateReportTable();updateReportChart();
-  const el=document.getElementById('a4Report');
-  const w=window.open('','_blank','width=900,height=1200');
-  w.document.write(`<html><head><title>A4 Report</title><style>
-    @page{size:A4;margin:10mm}body{font-family:Segoe UI,Tahoma,Arial,sans-serif}
-    table{width:100%;border-collapse:collapse}
-    th,td{border:1px solid #ccc;padding:4px;font-size:10px;text-align:center}
-  </style></head><body>${el.outerHTML}</body></html>`);
-  w.document.close();w.focus();setTimeout(()=>w.print(),600);
+  syncReport(); updateReportTable();
+
+  /* ── Step 1: build chart data ── */
+  const mode = _rptActiveTab();
+  let chartData = mode==='single' ? [...(_s1GradData||[])] : [...(_gradData||[])];
+  if(!chartData.length){
+    const srcId = mode==='single' ? 's1_summaryBody' : 'summaryBody';
+    Array.from(document.querySelectorAll('#'+srcId+' tr')).forEach(r=>{
+      const tds=r.querySelectorAll('td');
+      if(tds.length>=4){
+        const mm=parseFloat(tds[1]?.innerText);
+        const pass=parseFloat((tds[3]?.innerText||'').replace('%','').trim());
+        if(!isNaN(mm)&&!isNaN(pass)&&isFinite(pass)) chartData.push({mm,pass});
+      }
+    });
+  }
+  chartData.sort((a,b)=>b.mm-a.mm);
+
+  /* ── Step 2: open print window builder ── */
+  function _doOpenPrint(chartImgSrc){
+    const el=document.getElementById('a4Report');
+    const clone=el.cloneNode(true);
+    const liveDiv=clone.querySelector('#reportChartDiv');
+    if(liveDiv){
+      if(chartImgSrc){
+        const img=document.createElement('img');
+        img.src=chartImgSrc;
+        img.style.cssText='width:100%;height:auto;display:block;border:0.5px solid #ccc;border-radius:3px;';
+        liveDiv.replaceWith(img);
+      } else {
+        liveDiv.innerHTML='<div style="text-align:center;padding:20mm;color:#aaa;font-size:8pt">⚠ Chart not available — run calculation first — شغّل الحساب </div>';
+      }
+    }
+    const w=window.open('','_blank','width=900,height=1200');
+    if(!w){alert('يرجى السماح بالنوافذ المنبثقة لطباعة التقرير');return;}
+    w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ASTM D6913 Report</title>'
+      +'<style>'
+      +'@page{size:A4 portrait;margin:5mm 6mm 5mm 6mm}'
+      +'*{box-sizing:border-box;margin:0;padding:0}'
+      +'body{font-family:Segoe UI,Tahoma,Arial,sans-serif;background:#fff;color:#111}'
+      +'#a4Report{width:199mm;font-size:7.5pt;padding:0;transform-origin:top right}'
+      +'table{width:100%;border-collapse:collapse}'
+      +'th,td{border:0.4px solid #ccc;padding:0.7mm 1.2mm;font-size:6.8pt}'
+      +'img{max-width:100%;height:auto;display:block}'
+      +'-webkit-print-color-adjust:exact;print-color-adjust:exact;'
+      +'</style>'
+      +'<script>window.onload=function(){'
+      +'var rpt=document.getElementById("a4Report");'
+      +'if(rpt){var pageH=277;var actualH=rpt.getBoundingClientRect().height*0.2646;'
+      +'if(actualH>pageH){var sc=pageH/actualH;rpt.style.transform="scale("+sc+")";'
+      +'rpt.style.transformOrigin="top right";document.body.style.height=(actualH*sc)+"mm";}}'
+      +'setTimeout(function(){window.print();},700);'
+      +'};<\/script>'
+      +'</head><body>'+clone.outerHTML+'</body></html>');
+    w.document.close();
+    w.focus();
+  }
+
+  /* ── Step 3: render chart in OFFSCREEN div (not hidden) → toImage → print ── */
+  if(chartData.length && window.Plotly){
+    /* Create a temporary visible div off-screen */
+    const offDiv=document.createElement('div');
+    offDiv.style.cssText='position:fixed;left:-9999px;top:0;width:900px;height:500px;background:#fff;z-index:-1;';
+    document.body.appendChild(offDiv);
+
+    const {trace,layout}=_buildReportChartLayout(chartData);
+    /* Override layout size explicitly for offscreen render */
+    const printLayout=Object.assign({},layout,{width:900,height:500,autosize:false});
+
+    Plotly.newPlot(offDiv,[trace],printLayout,{staticPlot:true,displayModeBar:false})
+      .then(function(){
+        return Plotly.toImage(offDiv,{format:'png',width:900,height:500});
+      })
+      .then(function(imgUrl){
+        document.body.removeChild(offDiv);
+        _doOpenPrint(imgUrl);
+      })
+      .catch(function(){
+        try{document.body.removeChild(offDiv);}catch(e){}
+        _doOpenPrint(null);
+      });
+  } else {
+    _doOpenPrint(null);
+  }
 }
 
 
@@ -1508,6 +2018,8 @@ const S1_CP_ALL = [
   {id:'s1_cp_50',  mm:50,    lbl:'2"'},
   {id:'s1_cp_375', mm:37.5,  lbl:'1½"'},
   {id:'s1_cp_25',  mm:25,    lbl:'1"'},
+  {id:'s1_cp_19',  mm:19,    lbl:'¾"',  rowId:'s1_cp_row_19'},
+  {id:'s1_cp_95',  mm:9.5,   lbl:'⅜"',  rowId:'s1_cp_row_95'},
 ];
 
 function s1_onSepChange(){
@@ -1520,10 +2032,10 @@ function s1_onSepChange(){
   document.getElementById('s1_sub_sep_lbl').innerHTML='<b>'+(cfg?cfg.lbl:'Sep')+'</b>';
   document.getElementById('s1_sub_sep_mm').innerHTML='<b>'+sep.toFixed(1)+'</b>';
 
-  /* Show/hide CP rows above Sep */
+  /* Show rows that are ABOVE Sep (mm > sep) — hide rows equal/below Sep */
   S1_CP_ALL.forEach(r=>{
-    const row=document.getElementById(r.id)?.closest('tr');
-    if(row) row.style.display=r.mm>sep?'none':'';
+    const rowEl = r.rowId ? document.getElementById(r.rowId) : document.getElementById(r.id)?.closest('tr');
+    if(rowEl) rowEl.style.display=r.mm>sep?'':'none';
   });
 
   /* Show/hide SubS rows that are above Sep */
@@ -1551,7 +2063,7 @@ function s1_calculate(){
   let CP_Md=0;
   if(!isNaN(CP_Mm)&&CP_Mm>0&&!isNaN(wcp)&&wcp>=0){
     CP_Md=CP_Mm/(1+wcp/100);
-    s1set('s1_cpmd_disp', CP_Md.toFixed(3)+' جم');
+    s1set('s1_cpmd_disp', CP_Md.toFixed(3)+' g');
     document.getElementById('s1_cpmd').value=CP_Md;
   } else {
     s1set('s1_cpmd_disp','—');
@@ -1563,8 +2075,8 @@ function s1_calculate(){
   const FP_Mm = s1_v('s1_fpmm');
   const FP_Md = FP_Mm / (1 + wfp/100);
   const S_Md  = CP_Md + FP_Md;
-  s1set('s1_fpmd_disp', S_Md>0?FP_Md.toFixed(3)+' جم':'—');
-  s1set('s1_smd_disp',  S_Md>0?S_Md.toFixed(3)+' جم':'—');
+  s1set('s1_fpmd_disp', S_Md>0?FP_Md.toFixed(3)+' g':'—');
+  s1set('s1_smd_disp',  S_Md>0?S_Md.toFixed(3)+' g':'—');
 
   /* SubS effective weight (washed dry if provided) */
   const SubS    = s1_v('s1_subsmd');
@@ -1577,34 +2089,34 @@ function s1_calculate(){
   if(!isNaN(s1WashV)&&s1WashV>0&&SubS>0){
     if(s1WashBar) s1WashBar.style.display='flex';
     const lossGm=SubS-s1WashV, lossPct=(lossGm/SubS)*100;
-    s1set('s1_wash_loss_disp', lossGm.toFixed(2)+' جم');
+    s1set('s1_wash_loss_disp', lossGm.toFixed(2)+' g');
     s1set('s1_wash_loss_pct',  lossPct.toFixed(2)+'%');
-    const sieveSum=[s1_v('s1_sub_sep'),s1_v('s1_sub_95'),s1_v('s1_sub_475'),s1_v('s1_sub_2'),
-                    s1_v('s1_sub_0425'),s1_v('s1_sub_015'),s1_v('s1_sub_0075')].reduce((a,b)=>a+b,0);
+    /* FCMR is cumulative — total retained = No.200 value */
+    const sieveSum=s1_v('s1_sub_0075');
     const diff=sieveSum-s1WashV;
     const adp=Math.abs(diff/s1WashV*100);
     const chkEl=document.getElementById('s1_sieve_check');
     if(chkEl){
-      chkEl.textContent=(adp<0.3?'✅':adp<1?'⚠️':'❌')+' مجموع المحجوز vs بعد الغسيل: '+(diff>=0?'+':'')+diff.toFixed(2)+' جم';
+      chkEl.textContent=(adp<0.3?'✅':adp<1?'⚠️':'❌')+' Sum of retained vs washed weight: '+(diff>=0?'+':'')+diff.toFixed(2)+' g';
       chkEl.style.color=adp<0.3?'#1F6B3A':adp<1?'#8B4500':'#c62828';
     }
   } else {
     if(s1WashBar) s1WashBar.style.display='none';
   }
 
-  if(!S_Md){s1_showStatus('أدخل البيانات الأساسية أولاً',false);return;}
+  if(!S_Md){s1_showStatus('Enter basic data first',false);return;}
 
   /* CP passing percentages */
-  const cpInputMap={75:'s1_cp_75',63:'s1_cp_63',50:'s1_cp_50',37.5:'s1_cp_375',25:'s1_cp_25'};
-  const cpMM=[75,63,50,37.5,25];
+  const cpInputMap={75:'s1_cp_75',63:'s1_cp_63',50:'s1_cp_50',37.5:'s1_cp_375',25:'s1_cp_25',19:'s1_cp_19',9.5:'s1_cp_95'};
+  const cpMM=[75,63,50,37.5,25,19,9.5];
   const cpVals={};
   cpMM.forEach(m=>{ cpVals[m]=s1_v(cpInputMap[m]); });
   const cpSep=s1_v('s1_cp_sep');
 
-  /* Show passing % for CP sieves */
-  const cpPassIds={75:'s1_p_cp_75',63:'s1_p_cp_63',50:'s1_p_cp_50',37.5:'s1_p_cp_375',25:'s1_p_cp_25'};
+  /* Show passing % for CP sieves — only for rows visible (mm > sep) */
+  const cpPassIds={75:'s1_p_cp_75',63:'s1_p_cp_63',50:'s1_p_cp_50',37.5:'s1_p_cp_375',25:'s1_p_cp_25',19:'s1_p_cp_19',9.5:'s1_p_cp_95'};
   cpMM.forEach(m=>{
-    if(m>sep){s1set(cpPassIds[m],'—');return;}
+    if(m<=sep){s1set(cpPassIds[m],'—');return;}
     s1set(cpPassIds[m],fmtPct((1-cpVals[m]/S_Md)*100));
   });
   /* Sep row in CP */
@@ -1627,16 +2139,26 @@ function s1_calculate(){
     '2':'s1_fp_2','0.425':'s1_fp_0425','0.15':'s1_fp_015','0.075':'s1_fp_0075'
   };
   Object.keys(subFCMR).forEach(k=>{
-    s1set(subPartialIds[k], SubSeff>0?fmtPct((1-subFCMR[k]/SubSeff)*100):'—');
+    let pct;
+    if(k==='0.075'){
+      /* No.200: % partial passing = wash loss / SubS,Md × 100
+         because material finer than No.200 = what was lost in washing */
+      pct = (SubS>0 && SubSeff<SubS) ? (SubS-SubSeff)/SubS*100 : 0;
+    } else {
+      pct = SubSeff>0 ? (1-subFCMR[k]/SubSeff)*100 : NaN;
+    }
+    s1set(subPartialIds[k], isNaN(pct)?'—':fmtPct(pct));
   });
 
   /* Build combined results table */
-  const allSieves=[
+  const _allSievesRaw=[
     {lbl:'3"',   mm:75,    type:'cp'},
     {lbl:'2½"',  mm:63,    type:'cp'},
     {lbl:'2"',   mm:50,    type:'cp'},
     {lbl:'1½"',  mm:37.5,  type:'cp'},
     {lbl:'1"',   mm:25,    type:'cp'},
+    {lbl:'¾"',   mm:19,    type:'cp'},
+    {lbl:'⅜"',   mm:9.5,   type:'cp'},
     {lbl:document.getElementById('s1_sep_lbl')?.innerText.replace('<b>','').replace('</b>','')||'Sep',
                  mm:sep,   type:'sep'},
     {lbl:'⅜"',   mm:9.5,   type:'sub'},
@@ -1645,19 +2167,36 @@ function s1_calculate(){
     {lbl:'No.40',mm:0.425, type:'sub'},
     {lbl:'No.100',mm:0.15, type:'sub'},
     {lbl:'No.200',mm:0.075,type:'sub'}
-  ].filter(r=>r.mm<=sep||r.type==='cp'?r.mm<=sep:true);
+  ];
+  /* Filter rules:
+     - CP rows: only show if mm > sep
+     - Sub rows: only show if mm < sep (avoid duplicate at Sep)
+     - Sep row: always show */
+  const allSieves=_allSievesRaw.filter(r=>{
+    if(r.type==='cp')  return r.mm > sep;
+    if(r.type==='sub') return r.mm < sep;
+    return true; // sep row always
+  });
+
+  /* Wash loss fraction — material finer than No.200 within SubS */
+  const s1WashLossFrac = (SubS>0 && SubSeff<SubS) ? (SubS-SubSeff)/SubS : 0;
 
   /* Compute combined CMR and passing for each */
   function combinedPass(mm){
     if(mm>=sep){
       /* use CP data */
       if(mm===sep) return CSCF;
-      const cmrVal = mm===75?cpVals[75]:mm===63?cpVals[63]:mm===50?cpVals[50]:mm===37.5?cpVals[37.5]:cpVals[25];
+      const cmrVal = mm===75?cpVals[75]:mm===63?cpVals[63]:mm===50?cpVals[50]:mm===37.5?cpVals[37.5]:mm===25?cpVals[25]:mm===19?(cpVals[19]||0):mm===9.5?(cpVals[9.5]||0):0;
       return (1-cmrVal/S_Md)*100;
     } else {
       /* use SubS data */
+      /* Correct formula: accounts for wash loss at ALL sub-sieves
+         % passing (combined) = CSCF × (SubS_Md − FCMR) / SubS_Md
+         • For No.200: FCMR = SubSeff → gives CSCF × WashLoss/SubS_Md  ✓
+         • For other sieves: FCMR from dry sieve, wash loss (all < No.200) adds to "passing" ✓
+         Old formula used SubSeff as denominator — wrong when wash loss > 0 */
       const fcmrKey = mm===9.5?'9.5':mm===4.75?'4.75':mm===2?'2':mm===0.425?'0.425':mm===0.15?'0.15':'0.075';
-      return CSCF*(1-subFCMR[fcmrKey]/SubSeff);
+      return SubS>0 ? CSCF*(SubS-subFCMR[fcmrKey])/SubS : 0;
     }
   }
 
@@ -1667,13 +2206,12 @@ function s1_calculate(){
   const labelEq={
     cp:'% مار = (1 − CMR ÷ S,Md) × 100',
     sep:'CSCF = (1 − CP,CMR@Sep ÷ S,Md) × 100',
-    sub:'% مار = CSCF × (1 − FCMR ÷ SubS,eff)'
+    sub:'% مار = CSCF × (SubS,Md − FCMR) ÷ SubS,Md'
   };
 
   /* collect rows and enforce monotonicity (passing % must decrease as mm decreases) */
   const s1rows=[];
   allSieves.forEach(r=>{
-    if(r.type==='cp'&&r.mm>sep) return;
     s1rows.push({...r, pp: combinedPass(r.mm)});
   });
   let prevPass=100;
@@ -1702,11 +2240,17 @@ function s1_calculate(){
   s1set('s1_d10_val',f3(_s1D10)); s1set('s1_d30_val',f3(_s1D30)); s1set('s1_d60_val',f3(_s1D60));
   s1set('s1_cu_val',f2(_s1Cu));   s1set('s1_cc_val',f2(_s1Cc));
   const cuOk=!isNaN(_s1Cu)&&isFinite(_s1Cu)&&!isNaN(_s1Cc)&&isFinite(_s1Cc);
-  s1set('s1_cucc_check', cuOk?(_s1Cu>=4&&_s1Cc>=1&&_s1Cc<=3?'✅ GW أو SW':(_s1Cu>=6&&_s1Cc>=1&&_s1Cc<=3?'✅ SW':'❌ GP / SP')):'—');
+  s1set('s1_cucc_check', cuOk?(_s1Cu>=4&&_s1Cc>=1&&_s1Cc<=3?'✅ Well-Graded (GW/SW)':(_s1Cu>=6&&_s1Cc>=1&&_s1Cc<=3?'✅ Well-Graded SW':'❌ Poorly-Graded (GP/SP)')):'N/A — Cu/Cc unavailable');
 
-  s1_showStatus('✅ تم الحساب بنجاح — فصل واحد',true);
+  s1_showStatus('✅ Calculation successful — Single Separation',true);
+  _lastCalcMode = 'single';
   s1_runClassification();
   s1_renderChart();
+  /* Sync report data whenever calculation runs */
+  syncReport();
+  updateReportTable();
+  /* Update report chart if report tab is visible */
+  if(document.getElementById('tab_report')?.classList.contains('active')) updateReportChart();
 }
 
 function s1_getCombinedPassing(mmTarget){
@@ -1725,24 +2269,24 @@ function s1_classifySoil(){
   const pf=document.getElementById('s1_plasticityFlag')?.value||'auto';
   const p200=s1_getCombinedPassing(0.075);
   const p4  =s1_getCombinedPassing(4.75);
-  if(isNaN(p200)) return {symbol:'—',name:'',detail:'شغّل الحساب أولاً.'};
+  if(isNaN(p200)) return {symbol:'—',name:'',detail:'Run calculation first.'};
   const isNP=(pf==='no');
   if(p200>=50){
     if(isNP){
-      if(isNaN(ll)) return {symbol:'ML',name:'ML — Silt طمي',detail:`% مار No.200=${p200.toFixed(1)}% ، NP — LL غير محدد، تصنيف ML افتراضي.`};
+      if(isNaN(ll)) return {symbol:'ML',name:'ML — Silt (Low Plasticity)',detail:`%Passing No.200=${p200.toFixed(1)}% — NP, LL unknown, default ML.`};
       const sym=ll<50?'ML':'MH';
-      const nm=ll<50?'ML — Silt طمي':'MH — Elastic Silt طمي مرن';
-      return {symbol:sym,name:nm,detail:`% مار No.200=${p200.toFixed(1)}% ، LL=${ll.toFixed(1)}% ، NP — Fine-grained.`};
+      const nm=ll<50?'ML — Silt (Low Plasticity)':'MH — Elastic Silt (High Plasticity)';
+      return {symbol:sym,name:nm,detail:`%Passing No.200=${p200.toFixed(1)}%, LL=${ll.toFixed(1)}% — NP — Fine-grained.`};
     }
-    if(isNaN(ll)||isNaN(pl)) return {symbol:'—',name:'أدخل LL و PL',detail:'لازم تدخل LL و PL للتربة الناعمة.'};
-    if(pl>=ll) return {symbol:'⚠️',name:'بيانات غير منطقية',detail:'PL أكبر من أو يساوي LL.'};
+    if(isNaN(ll)||isNaN(pl)) return {symbol:'—',name:'Enter LL and PL',detail:'LL and PL required for fine-grained soil.'};
+    if(pl>=ll) return {symbol:'⚠️',name:'Inconsistent data',detail:'PL must be less than LL.'};
     const pi=ll-pl, aLine=0.73*(ll-20);
     const bl=(ll>=12&&ll<=25&&pi>=4&&pi<=7);
     let sym='',nm='';
     if(bl){sym='CL-ML';nm='CL-ML Borderline';}
     else if(ll<50){sym=pi>aLine?'CL':'ML';nm=pi>aLine?'CL — Lean Clay':'ML — Silt';}
     else{sym=pi>aLine?'CH':'MH';nm=pi>aLine?'CH — Fat Clay':'MH — Elastic Silt';}
-    return {symbol:sym,name:nm,detail:`LL=${ll.toFixed(1)}% ، PI=${pi.toFixed(1)}% ، A-line=${aLine.toFixed(1)}%`};
+    return {symbol:sym,name:nm,detail:`LL=${ll.toFixed(1)}%, PI=${pi.toFixed(1)}% , A-line=${aLine.toFixed(1)}%`};
   }
   const fines=p200;
   const gt=(!isNaN(p4)&&(p4-fines)<(50-fines))?'G':'S';
@@ -1752,18 +2296,22 @@ function s1_classifySoil(){
   } else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll){const pi=ll-pl,aL=0.73*(ll-20);fs=pi>aL?'C':'M';}
   const cuA=!isNaN(_s1Cu)&&isFinite(_s1Cu), ccA=!isNaN(_s1Cc)&&isFinite(_s1Cc);
   const wg=cuA&&ccA&&(gt==='G'?(_s1Cu>=4&&_s1Cc>=1&&_s1Cc<=3):(_s1Cu>=6&&_s1Cc>=1&&_s1Cc<=3));
-  let dtl=`% مار No.200=${fines.toFixed(1)}% ، % مار No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
-  if(cuA) dtl+=` ، Cᵤ=${_s1Cu.toFixed(2)}`; if(ccA) dtl+=` ، Cc=${_s1Cc.toFixed(2)}`;
-  if(isNP) dtl+=' ، NP (غير لدنة → M-type)';
-  else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll) dtl+=` ، PI=${(ll-pl).toFixed(1)}%`;
+  let dtl=`%Passing No.200=${fines.toFixed(1)}%, %Passing No.4=${isNaN(p4)?'—':p4.toFixed(1)}%`;
+  if(cuA) dtl+=`, Cu=${_s1Cu.toFixed(2)}`; if(ccA) dtl+=`, Cc=${_s1Cc.toFixed(2)}`;
+  if(isNP) dtl+=' — NP (Non-Plastic → M-type)';
+  else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll) dtl+=`, PI=${(ll-pl).toFixed(1)}%`;
   if(fines<5){
-    if(!cuA||!ccA) return {symbol:gt+'?',name:`${gt==='G'?'Gravel':'Sand'} — يلزم Cu و Cc`,detail:dtl};
+    if(!cuA||!ccA){
+      return {symbol:gt==='G'?'G*':'S*',
+        name:`${gt==='G'?'Gravel':'Sand'} — D10, D30 & D60 required`,
+        detail:dtl+' — <5% fines. D10/D30/D60 not interpolated.'};
+    }
     const sym=wg?gt+'W':gt+'P';
-    const nm={GW:'GW — حصى متدرج جيداً',GP:'GP — حصى سيء التدرج',SW:'SW — رمل متدرج جيداً',SP:'SP — رمل سيء التدرج'};
-    return {symbol:sym,name:nm[sym]||sym,detail:dtl+(wg?' ✅ Well-Graded':' ❌ Poorly-Graded')};
+    const nm={GW:'GW — Well-Graded Gravel',GP:'GP — Poorly-Graded Gravel',SW:'SW — Well-Graded Sand',SP:'SP — Poorly-Graded Sand'};
+    return {symbol:sym,name:nm[sym]||sym,detail:dtl+(wg?' — Well-Graded':' — Poorly-Graded')};
   }
   if(fines>=5&&fines<=12){
-    if(!cuA||!ccA) return {symbol:`${gt}W-${gt}${fs}/${gt}P-${gt}${fs}`,name:'Dual Symbol',detail:dtl+' — يلزم Cu و Cc.'};
+    if(!cuA||!ccA) return {symbol:`${gt}W-${gt}${fs}/${gt}P-${gt}${fs}`,name:'Dual Symbol',detail:dtl+' — Cu and Cc required.'};
     const gs=wg?gt+'W':gt+'P';
     const sym=`${gs}-${gt}${fs}`;
     const nm={'GW-GC':'GW-GC','GW-GM':'GW-GM','GP-GC':'GP-GC','GP-GM':'GP-GM','SW-SC':'SW-SC','SW-SM':'SW-SM','SP-SC':'SP-SC','SP-SM':'SP-SM'};
@@ -1771,7 +2319,7 @@ function s1_classifySoil(){
   }
   const sym=gt+fs;
   const nm={GC:'GC — Clayey Gravel',GM:'GM — Silty Gravel',SC:'SC — Clayey Sand',SM:'SM — Silty Sand'};
-  return {symbol:sym,name:nm[sym]||sym,detail:dtl+' — أكثر من 12% ناعم.'};
+  return {symbol:sym,name:nm[sym]||sym,detail:dtl+' — >12% fines.'};
 }
 
 function s1_runClassification(){
@@ -1810,7 +2358,7 @@ function s1_renderChart(){
   if(typeof Plotly==='undefined'){setTimeout(s1_renderChart,400);return;}
   const el=document.getElementById('s1_gradChart');
   if(!_s1GradData.length){
-    if(el) el.innerHTML='<div style="text-align:center;color:#888;padding:60px 20px">أدخل البيانات واحسب أولاً</div>';
+    if(el) el.innerHTML='<div style="text-align:center;color:#888;padding:60px 20px">Enter data and calculate first</div>';
     return;
   }
   const data=[..._s1GradData].sort((a,b)=>b.mm-a.mm);
@@ -1847,7 +2395,7 @@ function s1_showStatus(msg,ok){
 
 function s1_resetForm(){
   ['s1_cpmm','s1_wcp','s1_fpmm','s1_wfp','s1_subsmd','s1_sub_washed',
-   's1_cp_75','s1_cp_63','s1_cp_50','s1_cp_375','s1_cp_25','s1_cp_sep',
+   's1_cp_75','s1_cp_63','s1_cp_50','s1_cp_375','s1_cp_25','s1_cp_19','s1_cp_95','s1_cp_sep',
    's1_sub_sep','s1_sub_95','s1_sub_475','s1_sub_2','s1_sub_0425','s1_sub_015','s1_sub_0075',
    's1_ll','s1_pl'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const s1hid=document.getElementById('s1_cpmd');if(s1hid)s1hid.value='0';
@@ -1861,7 +2409,7 @@ function s1_resetForm(){
     const el=document.getElementById(id);if(el)el.textContent='—';
   });
   document.getElementById('s1_summaryBody').innerHTML=
-    '<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">أدخل البيانات واضغط "احسب النتائج"</td></tr>';
+    '<tr><td colspan="6" style="color:#aaa;text-align:center;padding:20px">Enter data and click "Calculate"</td></tr>';
   _s1GradData=[];_s1D10=NaN;_s1D30=NaN;_s1D60=NaN;_s1Cu=NaN;_s1Cc=NaN;
   ['s1_d10_val','s1_d30_val','s1_d60_val','s1_cu_val','s1_cc_val'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.textContent='—';
@@ -1870,12 +2418,44 @@ function s1_resetForm(){
   const chartEl=document.getElementById('s1_gradChart');
   if(chartEl){
     if(typeof Plotly!=='undefined') try{Plotly.purge(chartEl);}catch(e){}
-    chartEl.innerHTML='<div style="text-align:center;color:#888;padding:60px 20px;font-size:13px">أدخل البيانات واضغط "احسب النتائج"</div>';
+    chartEl.innerHTML='<div style="text-align:center;color:#888;padding:60px 20px;font-size:13px">Enter data and click "Calculate"</div>';
   }
   const box=document.getElementById('s1_classResultBox');
-  if(box) box.innerHTML='<div class="class-empty">أدخل البيانات واضغط "احسب النتائج".</div>';
+  if(box) box.innerHTML='<div class="class-empty">Enter data and click "Calculate".</div>';
   const det=document.getElementById('s1_classDetail');if(det)det.textContent='—';
   const st=document.getElementById('s1_status');if(st){st.textContent='';st.style.display='none';}
+  /* ── Reset report panel ── */
+  _lastCalcMode=null;
+  _resetReportPanel();
+}
+
+/* ── Clear all report fields back to empty state ── */
+function _resetReportPanel(){
+  const dash='—';
+  const rptIds=[
+    'rpt_clientName','rpt_projectName','rpt_siteLocation','rpt_sampleNo',
+    'rpt_sampleDate','rpt_testDate','rpt_technician','rpt_env',
+    'rpt_method','rpt_sieveType','rpt_reportDate','rpt_reportNo','rpt_reportNoCell',
+    'rpt_sep1','rpt_sep2','rpt_smd','rpt_subs1','rpt_cscf1','rpt_cscf2'
+  ];
+  rptIds.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=dash;});
+  /* Clear sieve table */
+  const tb=document.getElementById('rpt_sieveBody');
+  if(tb) tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:#aaa;padding:3mm;font-size:7pt">Run calculation first</td></tr>';
+  /* Clear classification table completely */
+  const cb=document.getElementById('rpt_classBody');
+  if(cb) cb.innerHTML='<tr><td colspan="4" style="text-align:center;color:#aaa;padding:3mm;font-size:7pt">Run calculation first</td></tr>';
+  /* Reset stored classification temp vars */
+  _rpt_uscsSymbol='—';_rpt_uscsName='—';_rpt_aashtoSymbol='—';_rpt_aashtoName='—';
+  /* Clear chart div */
+  const cd=document.getElementById('reportChartDiv');
+  if(cd){
+    if(window.Plotly) try{Plotly.purge(cd);}catch(e){}
+    cd.innerHTML='<div style="text-align:center;color:#aaa;padding:40px;font-size:8pt">Run calculation first</div>';
+  }
+  /* Reset subtitle */
+  const sub=document.getElementById('rpt_header_subtitle');
+  if(sub) sub.textContent='ASTM D6913-17 — Composite Sieving';
 }
 
 
@@ -1887,7 +2467,7 @@ function d2_onSepChange(){
   const sep2=parseFloat(document.getElementById('sep2').value)||9.5; // FINER
 
   if(sep2>=sep1){
-    showStatus('⚠️ Sep.2 يجب أن يكون أصغر من Sep.1 — تم التصحيح تلقائياً',false);
+    showStatus('⚠️ Sep.2 must be smaller than Sep.1 — corrected automatically',false);
     const opts=[4.75,9.5,19];
     const validSep2=opts.filter(o=>o<sep1);
     document.getElementById('sep2').value=validSep2.length?String(validSep2[validSep2.length-1]):'4.75';
@@ -1953,13 +2533,13 @@ function d2_onSepChange(){
 
   /* ── Update card headers ── */
   const h_cp=document.getElementById('d2_cp_header');
-  if(h_cp) h_cp.textContent=`🪨 1stCP — الجزء الخشن الأول (محجوز على Sep.1 = ${LBLS[sep1]||sep1} = ${sep1}mm)`;
+  if(h_cp) h_cp.textContent=`🪨 1stCP — 1stCP — Coarse Part (Retained on Sep.1 = ${LBLS[sep1]||sep1} = ${sep1}mm)`;
 
   const h_ss1=document.getElementById('d2_ss1_header');
-  if(h_ss1) h_ss1.textContent=`🔵 1stSubS — العينة الفرعية الأولى (Sep.2=${sep2}mm ↔ Sep.1=${sep1}mm)`;
+  if(h_ss1) h_ss1.textContent=`🔵 1stSubS — 1stSubS — First Sub-Sample (Sep.2=${sep2}mm ↔ Sep.1=${sep1}mm)`;
 
   const h_ss2=document.getElementById('d2_ss2_header');
-  if(h_ss2) h_ss2.textContent=`🔬 2ndSubS — الجزء الناعم (< Sep.2 = ${LBLS[sep2]||sep2} = ${sep2}mm)`;
+  if(h_ss2) h_ss2.textContent=`🔬 2ndSubS — Fine Part (< Sep.2 = ${LBLS[sep2]||sep2} = ${sep2}mm)`;
 
   calculate();
 }
