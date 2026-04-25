@@ -106,7 +106,7 @@ td input[type=number]:focus{outline:none;border-color:#5B2D8E}
 <body>
 <header>
   <h1>🔬 ASTM D6913 &nbsp;|&nbsp; Soil Particle-Size Distribution — Sieve Analysis Calculator</h1>
-  <p>حاسبة تحليل المناخل وتوزيع حجم الحبيبات— نخل مركب (فصل واحد وفصلين) ونخل مفرد</p>
+  <p>حاسبة تحليل المنخل وتوزيع حجم الجسيمات — نخل مركب (فصل واحد وفصلين) ونخل مفرد</p>
   <button class="guide-btn" onclick="document.getElementById('guideModal').style.display='flex'">📖 دليل الاستخدام والحسابات</button>
   <div style="margin-top:10px;display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:6px 20px;backdrop-filter:blur(4px)">
     <div style="font-size:11px;opacity:.75;letter-spacing:.3px;margin-bottom:2px">تم إعداد وتطوير المنصة</div>
@@ -1360,17 +1360,29 @@ let _gradData=[], _D10=NaN, _D30=NaN, _D60=NaN, _Cu=NaN, _Cc=NaN;
 let _lastCalcMode = null; // 'double' | 'single'
 
 /* ═══ Log-linear interpolation for Dn ═══ */
-function interpolateDn(data,targetPct){
-  const sorted=[...data].filter(d=>d.pass>=0&&d.pass<=100).sort((a,b)=>a.mm-b.mm);
-  for(let i=0;i<sorted.length-1;i++){
-    const p1=sorted[i].pass,p2=sorted[i+1].pass;
-    if(p1<=targetPct&&p2>=targetPct&&p2!==p1){
-      const lD1=Math.log10(sorted[i].mm),lD2=Math.log10(sorted[i+1].mm);
-      return Math.pow(10,lD1+(targetPct-p1)/(p2-p1)*(lD2-lD1));
+/* ── Log-Linear Interpolation for Dx (ASTM D6913) ──
+   Sorted ascending by mm. Finds the bracket where % passing crosses targetPct
+   and interpolates on the log10(diameter) axis. */
+function interpolateDn(data, targetPct){
+  const sorted = [...data]
+    .filter(d => d.pass >= 0 && d.pass <= 100)
+    .sort((a, b) => a.mm - b.mm);        // ascending: fine→coarse
+
+  for(let i = 0; i < sorted.length - 1; i++){
+    const p1 = sorted[i].pass,   d1 = sorted[i].mm;
+    const p2 = sorted[i+1].pass, d2 = sorted[i+1].mm;
+    if(p1 <= targetPct && p2 >= targetPct && p2 !== p1 && d1 > 0 && d2 > 0){
+      /* Log-Linear Interpolation:  logD = logD1 + (t-p1)/(p2-p1)*(logD2-logD1) */
+      const logD = Math.log10(d1) + (targetPct - p1) / (p2 - p1)
+                   * (Math.log10(d2) - Math.log10(d1));
+      return Math.pow(10, logD);
     }
   }
   return NaN;
 }
+
+/* storage for Simple Sieve Dx values (used by ss_renderChart) */
+let _ssDx = {D10:NaN, D30:NaN, D60:NaN, D85:NaN};
 
 /* ═══ Read combined passing from summaryBody ═══ */
 function getCombinedPassing(mmTarget){
@@ -1397,12 +1409,17 @@ function classifyAASHTO(getFn, ll, pl, isNP){
     return Math.max(0,Math.round(gi));
   }
   const aashtoUse={
-    'A-1-a':'Well-Graded Gravel/Sand — Excellent subgrade','A-1-b':'Well-Graded Gravel/Sand — Excellent subgrade',
-    'A-3':'Fine Sand — Good to Excellent subgrade','A-2-4':'Gravel/Sand with low fines — Good to Excellent',
-    'A-2-5':'Gravel/Sand with low fines — Good to Excellent','A-2-6':'Gravel/Sand with clayey fines — Fair',
-    'A-2-7':'Gravel/Sand with high-plasticity fines — Fair to Poor',
-    'A-4':'تربة طمي — رديء إلى مقبول كأساس','A-5':'طمي لدن عالي — رديء',
-    'A-6':'Plastic Clay — Poor','A-7-5':'Elastic/Plastic Clay — Very Poor','A-7-6':'Swelling Clay — Very Poor'
+    'A-1-a':'Coarse Granular Material (Stone, Gravel & Sand) — Excellent subgrade',
+    'A-1-b':'Coarse Granular Material (Gravel & Sand) — Excellent subgrade',
+    'A-3':'Fine Sand (non-plastic) — Good to Excellent subgrade',
+    'A-2-4':'Granular Material with Silty Fines — Good to Excellent',
+    'A-2-5':'Granular Material with Silty Fines (high LL) — Good to Excellent',
+    'A-2-6':'Granular Material with Clayey Fines — Fair to Good',
+    'A-2-7':'Granular Material with High-Plasticity Fines — Fair to Poor',
+    'A-4':'Silty Soil — Poor to Fair subgrade','A-5':'Elastic Silty Soil — Poor subgrade',
+    'A-6':'Plastic Clay Soil — Poor subgrade',
+    'A-7-5':'Elastic/Plastic Clay — Very Poor subgrade',
+    'A-7-6':'Swelling Clay — Very Poor subgrade'
   };
   const p10v=isNaN(p10)?100:p10, p40v=isNaN(p40)?100:p40;
   let sym,name,gi=0;
@@ -1431,20 +1448,32 @@ function renderClassTable(uscs, aashto, tbodyId){
   const tbody=document.getElementById(tbodyId);
   if(!tbody) return;
   const uscsUse={
-    GW:'Foundation, Fill, Pavement Base',GP:'Foundation, Fill',GW_GC:'Foundation with Clay',GW_GM:'Foundation with Silt',
-    GP_GC:'Foundation/Fill',GP_GM:'Foundation/Fill',SW:'Foundation, Fill, Pavement Base',SP:'Foundation, Fill',
-    SW_SC:'Foundation with Clay',SW_SM:'Foundation with Silt',SP_SC:'Fill & Foundation',SP_SM:'Fill & Foundation',
+    GW:'Foundation, Fill, Pavement Base — Well-Graded (Cu≥4, 1≤Cc≤3)',
+    GP:'Foundation, Fill — Poorly-Graded',
+    GW_GC:'Foundation with Clay Fines — Well-Graded',GW_GM:'Foundation with Silt Fines — Well-Graded',
+    GP_GC:'Foundation/Fill — Poorly-Graded with Clay',GP_GM:'Foundation/Fill — Poorly-Graded with Silt',
+    SW:'Foundation, Fill, Pavement Base — Well-Graded (Cu≥6, 1≤Cc≤3)',
+    SP:'Foundation, Fill — Poorly-Graded',
+    SW_SC:'Foundation with Clay Fines — Well-Graded',SW_SM:'Foundation with Silt Fines — Well-Graded',
+    SP_SC:'Fill & Foundation — Poorly-Graded with Clay',SP_SM:'Fill & Foundation — Poorly-Graded with Silt',
     GM:'Foundation, Drainage Barrier',GC:'Barrier, Foundation',SM:'Foundation, Fill',SC:'Barrier, Foundation',
     ML:'Limited Fill',CL:'Barrier, Foundation',MH:'Fill (avoid)',CH:'Barrier (watch for swell)',
     'CL-ML':'Review required','NP':'—'
   };
-  const sym=uscs.symbol.replace(/-/g,'_');
+  /* Detect pending / dual symbol states */
+  const isPending = uscs.symbol.includes('*') || uscs.symbol===''|| uscs.symbol==='—';
+  const isDual    = uscs.name?.toLowerCase().includes('dual') || uscs.name?.toLowerCase().includes('cu and cc');
+  const sym       = uscs.symbol.replace(/-/g,'_');
+  let uscsUseText = uscsUse[sym] || uscsUse[uscs.symbol] || '—';
+  if(isPending || isDual) uscsUseText = '⚠️ Cu & Cc required — enter sufficient sieve data for D₁₀, D₃₀, D₆₀';
+
+  const uBg = isPending ? '#888' : '#5B2D8E';
   const uscsRow=`<tr style="background:#f3e5ff">
     <td style="font-weight:700;color:#5B2D8E">USCS<br><span style="font-size:9px;color:#888">ASTM D2487</span></td>
-    <td><span style="display:inline-block;background:#5B2D8E;color:#fff;padding:3px 10px;border-radius:6px;font-weight:900;font-size:13px">${uscs.symbol}</span></td>
+    <td><span style="display:inline-block;background:${uBg};color:#fff;padding:3px 10px;border-radius:6px;font-weight:900;font-size:13px">${uscs.symbol}</span></td>
     <td>${uscs.name||'—'}</td>
     <td style="font-size:10px">ASTM D2487</td>
-    <td style="font-size:10px">${uscsUse[sym]||uscsUse[uscs.symbol]||'—'}</td>
+    <td style="font-size:10px;color:${isPending||isDual?'#c62828':'inherit'}">${uscsUseText}</td>
   </tr>`;
   const giStr=aashto.gi==='—'?'—':`GI = ${aashto.gi}`;
   const aashtoRow=`<tr style="background:#fff3e0">
@@ -1652,16 +1681,16 @@ function renderChart(){
     font:{size:9,color:'#4a1a8a'}
   }));
 
+  const dxOvD = _makeDxOverlay(_D10, _D30, _D60, 150, 0.04);
   const layout={
     margin:{l:55,r:20,t:50,b:55},
     paper_bgcolor:'#fff',
     plot_bgcolor:'#fafafa',
-    title:{text:'منحنى التدرج الحبيبي / Particle Size Distribution',font:{size:13,color:'#333'}},
+    title:{text:'Grain Size Distribution Curve — Composite Sieving',font:{size:13,color:'#333'}},
     xaxis:{
-      title:{text:'حجم الحبة (mm) / Particle Size',font:{size:11}},
+      title:{text:'Particle Size (mm)',font:{size:11}},
       type:'log',
       autorange:false,
-      /* range in log10: log10(150)≈2.18 → log10(0.04)≈-1.4, REVERSED (coarse left, fine right) */
       range:[2.18, -1.40],
       gridcolor:'#eee',
       zeroline:false,
@@ -1671,15 +1700,15 @@ function renderChart(){
       tickfont:{size:9}
     },
     yaxis:{
-      title:{text:'% المار / % Passing',font:{size:11}},
-      range:[-6,105],
+      title:{text:'% Passing',font:{size:11}},
+      range:[-6,110],
       gridcolor:'#eee',
       zeroline:true,
       zerolinecolor:'#ccc',
       tickfont:{size:10}
     },
-    shapes:[...vShapes,...hShapes],
-    annotations:[...annotations,...dataAnnotations],
+    shapes:[...vShapes,...hShapes,...dxOvD.shapes],
+    annotations:[...annotations,...dataAnnotations,...dxOvD.annotations],
     showlegend:false
   };
 
@@ -2599,14 +2628,17 @@ function s1_renderChart(){
   };
   const annot=sieveRefs.map(s=>({x:Math.log10(s.mm),y:-8,xref:'x',yref:'y',text:s.label,showarrow:false,font:{size:9,color:'#666'}}));
   const datAnnot=data.map(d=>({x:Math.log10(d.mm),y:d.pass+4,xref:'x',yref:'y',text:d.pass.toFixed(1)+'%',showarrow:false,font:{size:9,color:'#1A3A6B'}}));
+  const dxOvS1 = _makeDxOverlay(_s1D10, _s1D30, _s1D60, 150, 0.04);
   const layout={
     margin:{l:55,r:20,t:50,b:55},paper_bgcolor:'#fff',plot_bgcolor:'#fafafa',
-    title:{text:'منحنى التدرج — فصل واحد',font:{size:13,color:'#333'}},
-    xaxis:{title:{text:'حجم الحبة (mm)',font:{size:11}},type:'log',autorange:false,range:[2.18,-1.40],gridcolor:'#eee',zeroline:false,
+    title:{text:'Grain Size Distribution Curve — Single Separation',font:{size:13,color:'#333'}},
+    xaxis:{title:{text:'Particle Size (mm)',font:{size:11}},type:'log',autorange:false,range:[2.18,-1.40],gridcolor:'#eee',zeroline:false,
       tickvals:[100,75,50,37.5,25,19,9.5,4.75,2,0.425,0.15,0.075],
       ticktext:['100','75','50','37.5','25','19','9.5','4.75','2','0.425','0.15','0.075'],tickangle:-45,tickfont:{size:9}},
-    yaxis:{title:{text:'% المار',font:{size:11}},range:[-6,105],gridcolor:'#eee',zeroline:true,zerolinecolor:'#ccc'},
-    shapes:[...vShapes,...hShapes],annotations:[...annot,...datAnnot],showlegend:false
+    yaxis:{title:{text:'% Passing',font:{size:11}},range:[-6,110],gridcolor:'#eee',zeroline:true,zerolinecolor:'#ccc'},
+    shapes:[...vShapes,...hShapes,...dxOvS1.shapes],
+    annotations:[...annot,...datAnnot,...dxOvS1.annotations],
+    showlegend:false
   };
   Plotly.newPlot('s1_gradChart',[trace],layout,{responsive:true,displayModeBar:true,modeBarButtonsToRemove:['lasso2d','select2d','autoScale2d']});
 }
@@ -2836,14 +2868,15 @@ function ss_calculate(){
   SS_SIEVES.forEach(s=>{
     cumRet = ss_v(s.id);   /* المحجوز التراكمي مُدخَل مباشرةً */
 
-    /* % المحجوز التراكمي = (محجوز على مناخل + فاقد الغسيل) / totalDry */
-    const totalCumRetForPct = cumRet + washLoss;
-    const pRetPct  = Math.min((totalCumRetForPct / totalDry) * 100, 100);
+    /* ── الصيغة الصحيحة (ASTM D6913) ──
+       % Passing = (TotalDry − cumRet) / TotalDry × 100
+       - cumRet هو الوزن التراكمي على المناخل فقط
+       - washLoss لا يُضاف هنا؛ هو جزء من المادة المارة بالتعريف
+       - للـ No.200: passing = (500-350)/500 = 30% وليس 0%
+       - للمناخل ذات cumRet=0: passing = 100% صحيح */
+    const pRetPct = Math.min((cumRet / totalDry) * 100, 100);
+    const passPct = Math.max(0, 100 - pRetPct);
 
-    /* % المار = الباقي من الكلي */
-    const passPct  = Math.max(0, 100 - pRetPct);
-
-    /* عمود "محجوز تراكمي" هو الإدخال المباشر */
     ss_set(s.pr, pRetPct.toFixed(1) + '%');
     ss_set(s.pp, passPct.toFixed(1) + '%');
 
@@ -2851,21 +2884,25 @@ function ss_calculate(){
       _ssGradData.push({mm: s.mm, pass: passPct});
   });
 
-  /* Pan / finer than No.200 */
-  const retOnSieves = cumRet;
+  /* Pan / finer than No.200 ──────────────────────────────────────────
+     المادة الأدق من No.200:
+     - بالغسيل:  washLoss = totalDry − washedMass  (المادة التي مرت No.200 أثناء الغسيل)
+     - بدون غسيل: totalDry − cumRet_at_200          (الباقي بعد طرح المحجوز التراكمي) */
+  const retOnSieves = cumRet;   /* آخر قيمة = cumRet عند No.200 */
   let finerThan200;
   if(hasWash){
-    /* الفاقد في الغسيل = totalDry − washedDry */
-    finerThan200 = Math.max(0, totalDry - washedVal);
-    ss_set('ss_pan_mass', finerThan200.toFixed(1)+' g  ('+(finerThan200/totalDry*100).toFixed(1)+'%)');
+    finerThan200 = Math.max(0, totalDry - washedVal);   /* = washLoss */
+    const pct200 = (finerThan200 / totalDry * 100).toFixed(1);
+    ss_set('ss_pan_mass', finerThan200.toFixed(1) + ' g  (' + pct200 + '%)');
     ss_set('ss_pan_note', 'محسوب من فاقد الغسيل');
   } else {
     finerThan200 = Math.max(0, totalDry - retOnSieves);
-    ss_set('ss_pan_mass', finerThan200.toFixed(1)+' g  ('+(finerThan200/totalDry*100).toFixed(1)+'%)');
+    const pct200 = (finerThan200 / totalDry * 100).toFixed(1);
+    ss_set('ss_pan_mass', finerThan200.toFixed(1) + ' g  (' + pct200 + '%)');
     ss_set('ss_pan_note', 'محسوب = الكلي − مجموع المحجوز');
   }
 
-  /* Mass balance check — مجموع المحجوز على المناخل vs وزن بعد الغسيل */
+  /* Mass balance check — cumRet عند No.200 يجب ≈ washedMass */
   const diff = retOnSieves - (hasWash ? washedVal : totalDry);
   const checkBar = document.getElementById('ss_check_bar');
   const checkTxt = document.getElementById('ss_check_txt');
@@ -2883,11 +2920,13 @@ function ss_calculate(){
   const ssD10 = interpolateDn(_ssGradData, 10);
   const ssD30 = interpolateDn(_ssGradData, 30);
   const ssD60 = interpolateDn(_ssGradData, 60);
+  const ssD85 = interpolateDn(_ssGradData, 85);
   const ssCu  = (!isNaN(ssD10)&&ssD10>0) ? ssD60/ssD10 : NaN;
   const ssCc  = (!isNaN(ssD10)&&ssD10>0&&!isNaN(ssD30)&&!isNaN(ssD60)&&ssD60>0)
                 ? (ssD30*ssD30)/(ssD60*ssD10) : NaN;
   const f3=n=>(isNaN(n)||!isFinite(n))?'—':n.toFixed(3);
   const f2=n=>(isNaN(n)||!isFinite(n))?'—':n.toFixed(2);
+  _ssDx = {D10:ssD10, D30:ssD30, D60:ssD60, D85:ssD85};
   ss_set('ss_d10',f3(ssD10)); ss_set('ss_d30',f3(ssD30)); ss_set('ss_d60',f3(ssD60));
   ss_set('ss_cu', f2(ssCu));  ss_set('ss_cc', f2(ssCc));
 
@@ -2926,16 +2965,24 @@ function ss_classify(){
   const cuOk  = isGravel?cuOkG:cuOkS;
 
   let sym='—', name='—';
+  const cuCcAvail = !isNaN(ssCu) && !isNaN(ssCc);
   if(p0075<5){
-    /* Coarse-grained — no/negligible fines */
-    if(isGravel){ sym=cuOk?'GW':'GP'; name=cuOk?'GW — Well-Graded Gravel':'GP — Poorly-Graded Gravel'; }
-    else         { sym=cuOk?'SW':'SP'; name=cuOk?'SW — Well-Graded Sand':'SP — Poorly-Graded Sand';   }
+    if(!cuCcAvail){
+      sym = isGravel ? 'GW/GP' : 'SW/SP';
+      name= (isGravel?'Gravel':'Sand')+' — ⚠️ Cu & Cc required (D₁₀, D₃₀, D₆₀ needed)';
+    } else {
+      if(isGravel){ sym=cuOk?'GW':'GP'; name=cuOk?'GW — Well-Graded Gravel':'GP — Poorly-Graded Gravel'; }
+      else         { sym=cuOk?'SW':'SP'; name=cuOk?'SW — Well-Graded Sand':'SP — Poorly-Graded Sand';   }
+    }
   } else if(p0075>=5 && p0075<=12){
-    /* Borderline — dual symbol */
-    if(isGravel){ sym=cuOk?'GW-GM':'GP-GM'; name=sym+' — Gravel with Fines'; }
-    else         { sym=cuOk?'SW-SM':'SP-SM'; name=sym+' — Sand with Fines';   }
+    if(!cuCcAvail){
+      sym = isGravel ? 'GW-GM/GP-GM' : 'SW-SM/SP-SM';
+      name= 'Dual Symbol — ⚠️ Cu & Cc required (D₁₀, D₃₀, D₆₀ needed)';
+    } else {
+      if(isGravel){ sym=cuOk?'GW-GM':'GP-GM'; name=sym+' — Gravel with Fines'; }
+      else         { sym=cuOk?'SW-SM':'SP-SM'; name=sym+' — Sand with Fines';   }
+    }
   } else {
-    /* Fine-dominant in coarse fraction */
     if(isGravel) sym=!isNaN(ll)&&!isNaN(pl)&&(ll-pl)>7?'GC':'GM';
     else         sym=!isNaN(ll)&&!isNaN(pl)&&(ll-pl)>7?'SC':'SM';
     name=sym+({GC:' — Clayey Gravel',GM:' — Silty Gravel',SC:' — Clayey Sand',SM:' — Silty Sand'}[sym]||'');
@@ -2964,6 +3011,49 @@ function ss_getPass(mm){
   return pt ? pt.pass : NaN;
 }
 
+/* ── Dx Crosshair Shapes + Annotations for Plotly charts ──
+   xRange: log10 x-axis domain [max, min] (coarse left = positive, fine = negative)
+   Returns {shapes, annotations} ready to spread into layout. */
+function _makeDxOverlay(D10, D30, D60, xAxisMin, xAxisMax){
+  const DX_DEFS = [
+    {val:D10, pct:10, color:'#E65100', label:'D₁₀'},
+    {val:D30, pct:30, color:'#1F6B3A', label:'D₃₀'},
+    {val:D60, pct:60, color:'#1A3A6B', label:'D₆₀'},
+  ];
+  const shapes=[], annotations=[];
+  DX_DEFS.forEach(({val, pct, color, label})=>{
+    if(isNaN(val)||val<=0) return;
+    const logX = Math.log10(val);
+    const dispVal = val >= 1 ? val.toFixed(3) : val.toFixed(4);
+
+    /* Vertical dashed line at x=val (log scale) */
+    shapes.push({
+      type:'line', xref:'x', yref:'y',
+      x0:val, x1:val, y0:0, y1:pct,
+      line:{color, dash:'dash', width:1.5}
+    });
+    /* Horizontal dashed line from left edge to x=val */
+    shapes.push({
+      type:'line', xref:'x', yref:'y',
+      x0:xAxisMax, x1:val, y0:pct, y1:pct,
+      line:{color, dash:'dash', width:1.5}
+    });
+    /* Dot at intersection */
+    annotations.push({
+      x:logX, y:pct, xref:'x', yref:'y',
+      showarrow:true, arrowhead:4, arrowsize:.8,
+      ax:0, ay:-28, arrowcolor:color,
+      bgcolor:'#fff', bordercolor:color, borderwidth:1.2, borderpad:3,
+      font:{size:9, color, family:'monospace'},
+      text:`<b>${label} = ${dispVal} mm</b>`
+    });
+  });
+  return {shapes, annotations};
+}
+
+
+
+
 function ss_renderChart(){
   const div = document.getElementById('ss_chart');
   if(!div||!window.Plotly||!_ssGradData.length) return;
@@ -2978,18 +3068,21 @@ function ss_renderChart(){
     name:''
   };
   const refs=[75,50,25,19,9.5,4.75,2,0.425,0.15,0.075];
-  const vShapes=refs.map(mm=>({type:'line',x0:mm,x1:mm,y0:0,y1:100,line:{color:'#ddd',dash:'dot',width:1}}));
-  const hShapes=[10,30,60,90].map(y=>({type:'line',x0:0.04,x1:150,y0:y,y1:y,line:{color:'#eee',dash:'dot',width:1}}));
+  const vShapes=refs.map(mm=>({type:'line',xref:'x',yref:'y',x0:mm,x1:mm,y0:0,y1:100,line:{color:'#ddd',dash:'dot',width:1}}));
+  const hShapes=[10,30,60,90].map(y=>({type:'line',xref:'x',yref:'y',x0:0.04,x1:150,y0:y,y1:y,line:{color:'#eee',dash:'dot',width:1}}));
+  const dxOv = _makeDxOverlay(_ssDx.D10, _ssDx.D30, _ssDx.D60, 150, 0.04);
   const layout={
-    margin:{l:55,r:20,t:40,b:55}, paper_bgcolor:'#fff', plot_bgcolor:'#fafafa',
-    title:{text:'منحنى التدرج الحبيبي — نخل مفرد',font:{size:13}},
+    margin:{l:55,r:30,t:45,b:55}, paper_bgcolor:'#fff', plot_bgcolor:'#fafafa',
+    title:{text:'Grain Size Distribution Curve — Simple Sieve Analysis',font:{size:12,color:'#333'}},
     xaxis:{type:'log',autorange:false,range:[2.18,-1.40],gridcolor:'#eee',zeroline:false,
       tickvals:[75,50,25,19,9.5,4.75,2,0.425,0.15,0.075],
       ticktext:['75','50','25','19','9.5','No.4','No.10','No.40','No.100','No.200'],
-      tickangle:-45,tickfont:{size:9},title:{text:'حجم الحبة (mm)',font:{size:11}}},
-    yaxis:{range:[-5,105],gridcolor:'#eee',zeroline:true,tickfont:{size:10},
-      title:{text:'% المار / % Passing',font:{size:11}}},
-    shapes:[...vShapes,...hShapes],showlegend:false
+      tickangle:-45,tickfont:{size:9},title:{text:'Particle Size (mm)',font:{size:11}}},
+    yaxis:{range:[-5,110],gridcolor:'#eee',zeroline:true,tickfont:{size:10},
+      title:{text:'% Passing',font:{size:11}}},
+    shapes:[...vShapes,...hShapes,...dxOv.shapes],
+    annotations:[...dxOv.annotations],
+    showlegend:false
   };
   Plotly.react(div,[trace],layout,{responsive:true,displayModeBar:true,modeBarButtonsToRemove:['lasso2d','select2d']});
 }
@@ -3145,7 +3238,11 @@ window.onload=()=>{
         <div style="font-size:15px;font-weight:700" id="irm_title">📋 تقرير نتائج التحليل الحبيبي</div>
         <div style="font-size:11px;opacity:.85;margin-top:3px" id="irm_subtitle">ASTM D6913-17</div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:4px;background:rgba(255,255,255,.12);border-radius:8px;padding:3px">
+          <button id="rpt_style_btn_1" onclick="setReportStyle(1)" style="background:#fff;color:#1A3A6B;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">📋 نمط 1</button>
+          <button id="rpt_style_btn_2" onclick="setReportStyle(2)" style="background:rgba(255,255,255,.15);color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer">📄 نمط 2</button>
+        </div>
         <button onclick="printInlineReport()" style="background:#1F6B3A;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer">🖨️ طباعة A4</button>
         <button class="modal-close" onclick="document.getElementById('inlineReportModal').style.display='none'">✕</button>
       </div>
@@ -3163,6 +3260,24 @@ window.onload=()=>{
 /* ══════════════════════════════════════════
    INLINE REPORT ENGINE
    ══════════════════════════════════════════ */
+
+let _reportStyle = 1; // 1 = Classic (original), 2 = Modern
+
+function setReportStyle(n){
+  _reportStyle = n;
+  document.getElementById('rpt_style_btn_1').style.cssText = n===1
+    ? 'background:#fff;color:#1A3A6B;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer'
+    : 'background:rgba(255,255,255,.15);color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer';
+  document.getElementById('rpt_style_btn_2').style.cssText = n===2
+    ? 'background:#fff;color:#1A3A6B;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer'
+    : 'background:rgba(255,255,255,.15);color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer';
+  const mode = _lastCalcMode||'double';
+  const a4 = document.getElementById('irm_a4');
+  if(a4){
+    a4.innerHTML = n===2 ? _buildA4HTML_v2(mode) : _buildA4HTML(mode);
+    setTimeout(()=>_renderIRMChart(mode), 120);
+  }
+}
 
 function openInlineReport(mode){
   /* force-calculate if needed */
@@ -3191,7 +3306,7 @@ function openInlineReport(mode){
 
   /* Build A4 content */
   const a4 = document.getElementById('irm_a4');
-  a4.innerHTML = _buildA4HTML(mode);
+  a4.innerHTML = _reportStyle===2 ? _buildA4HTML_v2(mode) : _buildA4HTML(mode);
 
   modal.style.display='flex';
 
@@ -3323,6 +3438,25 @@ function _buildA4HTML(mode){
     dHTML=_dRow('ss_d10','ss_d30','ss_d60','ss_cu','ss_cc','ss_gradcheck');
   }
 
+  /* ── Particle Size Fractions ── */
+  const getFracFn = mode==='double' ? getCombinedPassing : mode==='single' ? s1_getCombinedPassing : ss_getPass;
+  const _pf475  = getFracFn(4.75);
+  const _pf0075 = getFracFn(0.075);
+  const _fracGravel = (!isNaN(_pf475)&&!isNaN(_pf0075)) ? (100-_pf475).toFixed(1)+'%' : '—';
+  const _fracSand   = (!isNaN(_pf475)&&!isNaN(_pf0075)) ? (_pf475-_pf0075).toFixed(1)+'%' : '—';
+  const _fracFines  = (!isNaN(_pf0075))                 ? _pf0075.toFixed(1)+'%'           : '—';
+  const fractHTML = `
+  <tr style="background:#daeaf5">
+    <th style="${_thC('1A3A6B')}">% Gravel (>4.75mm)</th>
+    <th style="${_thC('1A3A6B')}">% Sand (4.75–0.075mm)</th>
+    <th colspan="4" style="${_thC('8B4500')}">% Fines / Silt+Clay (<0.075mm)</th>
+  </tr>
+  <tr style="background:#f0f8ff">
+    <td style="${_tdC('font-weight:900;font-size:9pt;color:#1A3A6B')}">${_fracGravel}</td>
+    <td style="${_tdC('font-weight:900;font-size:9pt;color:#1F6B3A')}">${_fracSand}</td>
+    <td colspan="4" style="${_tdC('font-weight:900;font-size:9pt;color:#8B4500')}">${_fracFines}</td>
+  </tr>`;
+
   /* ── Show Sep.2 row only for double ── */
   const sep2RowStyle = mode==='double' ? '' : 'display:none';
 
@@ -3432,6 +3566,12 @@ function _buildA4HTML(mode){
         <tbody>${dHTML}</tbody>
       </table>
 
+      <!-- Particle Size Fractions -->
+      <div style="margin-top:2mm;background:#1A3A6B;color:#fff;font-size:7.5pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:1mm;letter-spacing:.5px">▌ PARTICLE SIZE FRACTIONS</div>
+      <table style="width:100%;border-collapse:collapse;font-size:7pt">
+        <tbody>${fractHTML}</tbody>
+      </table>
+
       <!-- Soil Classification -->
       <div style="margin-top:3mm;background:#5B2D8E;color:#fff;font-size:7.5pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:1mm;letter-spacing:.5px">▌ SOIL CLASSIFICATION</div>
       <div style="border:0.5px solid #ccc;border-radius:3px;overflow:hidden">${classHTML}</div>
@@ -3489,6 +3629,7 @@ function _thC(col){ return `font-weight:700;color:#${col};padding:1.2mm 2mm;bord
 function _tdC(extra){ return `border:0.5px solid #ccc;padding:1.2mm 2mm;text-align:center;direction:ltr;${extra||''}`; }
 
 function _extractClassHTML(uscsBox, aashtoBox){
+  /* ── Read symbol + name from DOM ── */
   let uscsSymbol='—', uscsName='—', aashtoSymbol='—', aashtoName='—';
   if(uscsBox){
     const badge=uscsBox.querySelector('.class-badge');
@@ -3503,6 +3644,84 @@ function _extractClassHTML(uscsBox, aashtoBox){
     if(ab) aashtoSymbol=ab.textContent.trim();
     if(an) aashtoName=an.textContent.trim();
   }
+
+  /* ── Build full description from classification lookup tables ── */
+  const USCS_DESC = {
+    // Clean gravels
+    'GW' :'Well-Graded Gravel',
+    'GP' :'Poorly-Graded Gravel',
+    'GM' :'Silty Gravel',
+    'GC' :'Clayey Gravel',
+    // Dual-symbol gravels
+    'GW-GM':'Well-Graded Gravel with Silt',
+    'GW-GC':'Well-Graded Gravel with Clay',
+    'GP-GM':'Poorly-Graded Gravel with Silt',
+    'GP-GC':'Poorly-Graded Gravel with Clay',
+    // Clean sands
+    'SW' :'Well-Graded Sand',
+    'SP' :'Poorly-Graded Sand',
+    'SM' :'Silty Sand',
+    'SC' :'Clayey Sand',
+    // Dual-symbol sands
+    'SW-SM':'Well-Graded Sand with Silt',
+    'SW-SC':'Well-Graded Sand with Clay',
+    'SP-SM':'Poorly-Graded Sand with Silt',
+    'SP-SC':'Poorly-Graded Sand with Clay',
+    // Fine-grained
+    'ML':'Silt (Low Plasticity)',
+    'MH':'Elastic Silt (High Plasticity)',
+    'CL':'Lean Clay (Low Plasticity)',
+    'CH':'Fat Clay (High Plasticity)',
+    'CL-ML':'Silty Clay (Borderline)',
+    'OL':'Organic Silt / Clay (Low Plasticity)',
+    'OH':'Organic Clay (High Plasticity)',
+    'PT':'Peat',
+    // Pending / insufficient data
+    'GW/GP':'Gravel — Cu & Cc required to determine Well vs Poorly Graded',
+    'SW/SP':'Sand — Cu & Cc required to determine Well vs Poorly Graded',
+    'G*':'Gravel — Insufficient gradation data (D₁₀, D₃₀, D₆₀ not determined)',
+    'S*':'Sand — Insufficient gradation data (D₁₀, D₃₀, D₆₀ not determined)',
+    // Dual symbols — 5–12% fines, Cu/Cc unavailable
+    'GW-GM/GP-GM':'⚠️ Could be Well-Graded OR Poorly-Graded Gravel with Silt — Cu & Cc required to resolve',
+    'GW-GC/GP-GC':'⚠️ Could be Well-Graded OR Poorly-Graded Gravel with Clay — Cu & Cc required to resolve',
+    'SW-SM/SP-SM':'⚠️ Could be Well-Graded OR Poorly-Graded Sand with Silt — Cu & Cc required to resolve',
+    'SW-SC/SP-SC':'⚠️ Could be Well-Graded OR Poorly-Graded Sand with Clay — Cu & Cc required to resolve',
+  };
+  const AASHTO_DESC = {
+    'A-1-a':'Well-graded gravel / stone',
+    'A-1-b':'Coarse sand / gravel',
+    'A-2-4':'Silty or clayey gravel & sand (LL≤40, PI≤10)',
+    'A-2-5':'Silty or clayey gravel & sand (LL>40, PI≤10)',
+    'A-2-6':'Silty or clayey gravel & sand (LL≤40, PI>10)',
+    'A-2-7':'Silty or clayey gravel & sand (LL>40, PI>10)',
+    'A-3' :'Fine sand (non-plastic)',
+    'A-4' :'Silty soil (LL≤40, PI≤10)',
+    'A-5' :'Silty soil (LL>40, PI≤10)',
+    'A-6' :'Clayey soil (LL≤40, PI>10)',
+    'A-7-5':'Clayey soil (elastic)',
+    'A-7-6':'Clayey soil (plastic)',
+  };
+
+  /* Resolve description — prefer lookup, fallback to DOM name */
+  const uscsDesc  = USCS_DESC[uscsSymbol]  || uscsName  || '—';
+  const aashtoDesc= AASHTO_DESC[aashtoSymbol] || aashtoName || '—';
+
+  /* For dual symbols like GW-GM/GP-GM split on '/' and look up each */
+  function resolveDual(sym, map, domName){
+    if(!sym || sym==='—') return domName||'—';
+    if(map[sym]) return map[sym];
+    /* Try splitting dual slash notation: "GW-GM/GP-GM" */
+    if(sym.includes('/')){
+      const parts = sym.split('/');
+      const resolved = parts.map(p=>map[p.trim()]||p.trim()).join(' / ');
+      return resolved;
+    }
+    return domName||sym;
+  }
+
+  const uscsFullDesc   = resolveDual(uscsSymbol,   USCS_DESC,   uscsName);
+  const aashtoFullDesc = resolveDual(aashtoSymbol, AASHTO_DESC, aashtoName);
+
   const symStyle=`font-size:13pt;font-weight:900;padding:2px 10px;border-radius:5px;display:inline-block;letter-spacing:1px`;
   return `
   <table style="width:100%;border-collapse:collapse;font-size:7.5pt;direction:ltr">
@@ -3517,12 +3736,12 @@ function _extractClassHTML(uscsBox, aashtoBox){
       <tr style="background:#faf5ff">
         <td style="${_tdSt()};font-weight:700;color:#5B2D8E">USCS &nbsp;<span style="font-weight:400;font-size:6.5pt;color:#888">(ASTM D2487)</span></td>
         <td style="${_tdC()};padding:1.5mm 2mm"><span style="${symStyle};background:#5B2D8E;color:#fff">${uscsSymbol}</span></td>
-        <td style="${_tdSt()}">${uscsName}</td>
+        <td style="${_tdSt()}">${uscsFullDesc}</td>
       </tr>
       <tr style="background:#fff8f0">
         <td style="${_tdSt()};font-weight:700;color:#8B4500">AASHTO &nbsp;<span style="font-weight:400;font-size:6.5pt;color:#888">(M145)</span></td>
         <td style="${_tdC()};padding:1.5mm 2mm"><span style="${symStyle};background:#8B4500;color:#fff">${aashtoSymbol}</span></td>
-        <td style="${_tdSt()}">${aashtoName}</td>
+        <td style="${_tdSt()}">${aashtoFullDesc}</td>
       </tr>
     </tbody>
   </table>`;
@@ -3580,6 +3799,12 @@ function _renderIRMChart(mode){
     marker:{size:7,color:'#1F6B3A'},
     hovertemplate:'%{x} mm<br>%{y:.1f}%<extra></extra>', name:''
   };
+  let dxD10=NaN, dxD30=NaN, dxD60=NaN;
+  if(mode==='double'){ dxD10=_D10; dxD30=_D30; dxD60=_D60; }
+  else if(mode==='single'){ dxD10=_s1D10; dxD30=_s1D30; dxD60=_s1D60; }
+  else { dxD10=(_ssDx||{}).D10||NaN; dxD30=(_ssDx||{}).D30||NaN; dxD60=(_ssDx||{}).D60||NaN; }
+  const dxOvIRM = _makeDxOverlay(dxD10, dxD30, dxD60, 150, 0.04);
+
   const layout={
     margin:{l:45,r:10,t:15,b:50},
     paper_bgcolor:'#fff', plot_bgcolor:'#fafafa',
@@ -3588,9 +3813,299 @@ function _renderIRMChart(mode){
       ticktext:['75','50','25','19','9.5','4.75','2','0.425','0.075'],
       tickangle:-45, tickfont:{size:8}, title:{text:'Particle Size (mm)',font:{size:9}}},
     yaxis:{range:[-6,110],gridcolor:'#eee',zeroline:true,tickfont:{size:8},title:{text:'% Passing',font:{size:9}}},
-    shapes:[...vShapes,...hShapes], showlegend:false
+    shapes:[...vShapes,...hShapes,...dxOvIRM.shapes],
+    annotations:[...dxOvIRM.annotations],
+    showlegend:false
   };
   Plotly.react(div,[trace],layout,{responsive:true,displayModeBar:false});
+}
+
+/* ══════════════════════════════════════════
+   REPORT STYLE 2 — Clean Professional Layout
+   Chart full-width | Data below side-by-side
+   ══════════════════════════════════════════ */
+function _buildA4HTML_v2(mode){
+  const p = _getProjectInfo();
+  const today = new Date().toLocaleDateString('en-GB');
+
+  let sieveTypeStr='', sep1Str='—', sep2Str='N/A', smdStr='—', subsStr='—', cscf1Str='—', cscf2Str='N/A';
+  let summaryBodyId='', gradDataArr=[];
+
+  if(mode==='double'){
+    sieveTypeStr='Composite Sieving — Double Separation';
+    const sep1El=document.getElementById('sep1');
+    const sep2El=document.getElementById('sep2');
+    sep1Str = sep1El ? sep1El.options[sep1El.selectedIndex]?.text||'—' : '—';
+    sep2Str = sep2El ? sep2El.options[sep2El.selectedIndex]?.text||'—' : '—';
+    smdStr  = document.getElementById('smd_disp')?.textContent||'—';
+    subsStr = document.getElementById('subs1md_disp')?.textContent||'—';
+    cscf1Str= document.getElementById('cscf1_val')?.textContent||'—';
+    cscf2Str= document.getElementById('cscf2_val')?.textContent||'—';
+    summaryBodyId='summaryBody'; gradDataArr=[...(_gradData||[])];
+  } else if(mode==='single'){
+    sieveTypeStr='Composite Sieving — Single Separation';
+    const sepEl=document.getElementById('s1_sep');
+    sep1Str = sepEl ? sepEl.options[sepEl.selectedIndex]?.text||'—' : '—';
+    sep2Str = 'N/A';
+    smdStr  = document.getElementById('s1_smd_disp')?.textContent||'—';
+    subsStr = document.getElementById('s1_fpmd_disp')?.textContent||'—';
+    cscf1Str= document.getElementById('s1_cscf_val')?.textContent||'—';
+    cscf2Str= 'N/A';
+    summaryBodyId='s1_summaryBody'; gradDataArr=[...(_s1GradData||[])];
+  } else {
+    sieveTypeStr='Simple Sieve Analysis (ASTM C136 / D6913)';
+    smdStr  = (document.getElementById('ss_total')?.value||'—')+' g';
+    cscf1Str='N/A'; cscf2Str='N/A'; sep1Str='N/A'; sep2Str='N/A';
+    summaryBodyId=''; gradDataArr=[...(_ssGradData||[])];
+  }
+
+  /* Sieve rows */
+  let sieveRowsHTML='';
+  const lblMap={75:'3"',63:'2½"',50:'2"',37.5:'1½"',25:'1"',19:'¾"',9.5:'⅜"',4.75:'No.4',2:'No.10',0.425:'No.40',0.15:'No.100',0.075:'No.200'};
+  if(mode==='simple'){
+    let odd=false;
+    SS_SIEVES.forEach(s=>{
+      const ppEl=document.getElementById(s.pp), inpEl=document.getElementById(s.id);
+      const ppV=ppEl?.textContent||'—';
+      const rawVal=parseFloat(inpEl?.value);
+      const crV=(!isNaN(rawVal)&&rawVal>0)?rawVal.toFixed(1)+' g':'—';
+      if(ppV==='—'&&crV==='—') return;
+      odd=!odd;
+      const bg=odd?'#fff':'#f5f5f5';
+      sieveRowsHTML+=`<tr style="background:${bg}"><td style="border:0.4px solid #ddd;padding:1mm 2mm">${lblMap[s.mm]||s.mm}</td><td style="border:0.4px solid #ddd;padding:1mm 2mm;text-align:center">${s.mm}</td><td style="border:0.4px solid #ddd;padding:1mm 2mm;text-align:center">${crV}</td><td style="border:0.4px solid #ddd;padding:1mm 2mm;text-align:center;font-weight:700;color:#333">${ppV}</td></tr>`;
+    });
+  } else {
+    const body=document.getElementById(summaryBodyId);
+    let odd=false;
+    if(body) body.querySelectorAll('tr').forEach(tr=>{
+      const tds=tr.querySelectorAll('td');
+      if(tds.length>=4){
+        odd=!odd;
+        const bg=odd?'#fff':'#f5f5f5';
+        const lbl=tds[0].innerText||'';
+        const isSep=lbl.toLowerCase().includes('sep');
+        const extra=isSep?'background:#f0e8ff;font-weight:700':'';
+        sieveRowsHTML+=`<tr style="background:${bg}"><td style="border:0.4px solid #ddd;padding:1mm 2mm;${extra}">${tds[0].innerText}</td><td style="border:0.4px solid #ddd;padding:1mm 2mm;text-align:center;${extra}">${tds[1].innerText}</td><td style="border:0.4px solid #ddd;padding:1mm 2mm;text-align:center;${extra}">${tds[2].innerText}</td><td style="border:0.4px solid #ddd;padding:1mm 2mm;text-align:center;font-weight:700;color:#1A3A6B;${extra}">${tds[3].innerText}</td></tr>`;
+      }
+    });
+  }
+  if(!sieveRowsHTML) sieveRowsHTML='<tr><td colspan="4" style="text-align:center;color:#aaa;padding:4mm">لا توجد بيانات</td></tr>';
+
+  /* Classification — use _extractClassHTML for consistent lookup table */
+  let classHTMLv2 = '—';
+  if(mode==='double'){
+    classHTMLv2 = _extractClassHTML(document.getElementById('classResultBox'), document.getElementById('aashtoResultBox'));
+  } else if(mode==='single'){
+    classHTMLv2 = _extractClassHTML(document.getElementById('s1_classResultBox'), document.getElementById('s1_aashtoResultBox'));
+  } else {
+    const box=document.getElementById('ss_classBox');
+    classHTMLv2 = box ? box.innerHTML : '—';
+  }
+
+  /* D values */
+  const g2=id=>document.getElementById(id)?.textContent||'—';
+  const [d10v2,d30v2,d60v2,cuv2,ccv2,chkv2] = mode==='double'
+    ? [g2('d10_val'),g2('d30_val'),g2('d60_val'),g2('cu_val'),g2('cc_val'),g2('cucc_check')]
+    : mode==='single'
+    ? [g2('s1_d10_val'),g2('s1_d30_val'),g2('s1_d60_val'),g2('s1_cu_val'),g2('s1_cc_val'),g2('s1_cucc_check')]
+    : [g2('ss_d10'),g2('ss_d30'),g2('ss_d60'),g2('ss_cu'),g2('ss_cc'),g2('ss_gradcheck')];
+
+  /* Fractions */
+  const getFracFn2 = mode==='double' ? getCombinedPassing : mode==='single' ? s1_getCombinedPassing : ss_getPass;
+  const _p2_475  = getFracFn2(4.75);
+  const _p2_0075 = getFracFn2(0.075);
+  const _fGravel2 = (!isNaN(_p2_475)&&!isNaN(_p2_0075)) ? (100-_p2_475).toFixed(1)+'%' : '—';
+  const _fSand2   = (!isNaN(_p2_475)&&!isNaN(_p2_0075)) ? (_p2_475-_p2_0075).toFixed(1)+'%' : '—';
+  const _fFines2  = (!isNaN(_p2_0075)) ? _p2_0075.toFixed(1)+'%' : '—';
+  const gradColorV2 = chkv2.includes('Well') ? '#1F6B3A' : chkv2==='—' ? '#888' : '#c62828';
+
+  const sep2RowV2 = mode==='double' ? '' : 'display:none';
+  const today2 = new Date().toLocaleDateString('en-GB');
+
+  return `
+<div style="direction:ltr;font-family:'Segoe UI',Tahoma,Arial,sans-serif;color:#111;font-size:7.5pt">
+
+<!-- ══ REPORT HEADER ══ -->
+<table style="width:100%;border-collapse:collapse;margin-bottom:2mm">
+  <tr>
+    <td style="width:25%;vertical-align:middle">
+      <div style="font-size:9pt;font-weight:900;color:#1A3A6B;letter-spacing:.5px">MATERIALS TESTING</div>
+      <div style="font-size:6.5pt;color:#888;margin-top:0.5mm">Laboratory Division — ISO 17025</div>
+    </td>
+    <td style="text-align:center;vertical-align:middle;padding:0 5mm">
+      <div style="font-size:13pt;font-weight:900;color:#1A3A6B;letter-spacing:1px">SOIL GRADATION REPORT</div>
+      <div style="font-size:7.5pt;font-weight:700;color:#5B2D8E;margin-top:1mm">${sieveTypeStr}</div>
+    </td>
+    <td style="width:25%;text-align:right;vertical-align:middle">
+      <div style="font-size:7pt;color:#666">Date: <b style="color:#111">${today2}</b></div>
+      <div style="font-size:7pt;color:#666;margin-top:1mm">Page <b>1</b> of <b>1</b></div>
+    </td>
+  </tr>
+</table>
+<div style="border-top:3px solid #1A3A6B;border-bottom:1px solid #99b8d6;padding-bottom:0.5mm;margin-bottom:4mm"></div>
+
+<!-- ══ PROJECT INFORMATION ══ -->
+<div style="background:#1A3A6B;color:#fff;font-size:7pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:1.5mm;letter-spacing:.8px">▌ PROJECT INFORMATION</div>
+<table style="width:100%;border-collapse:collapse;font-size:7.5pt;margin-bottom:4mm">
+  <tr>
+    <td style="font-weight:700;color:#1A3A6B;padding:1.2mm 2mm;border:0.5px solid #ccc;background:#f0f5fc;width:12%">Client</td>
+    <td style="padding:1.2mm 2mm;border:0.5px solid #ccc;width:29%">${p.client}</td>
+    <td style="font-weight:700;color:#1A3A6B;padding:1.2mm 2mm;border:0.5px solid #ccc;background:#f0f5fc;width:12%">Sample No.</td>
+    <td style="padding:1.2mm 2mm;border:0.5px solid #ccc">${p.sampleNo}</td>
+  </tr>
+  <tr>
+    <td style="font-weight:700;color:#1A3A6B;padding:1.2mm 2mm;border:0.5px solid #ccc;background:#f0f5fc">Project</td>
+    <td style="padding:1.2mm 2mm;border:0.5px solid #ccc">${p.project}</td>
+    <td style="font-weight:700;color:#1A3A6B;padding:1.2mm 2mm;border:0.5px solid #ccc;background:#f0f5fc">Sample Date</td>
+    <td style="padding:1.2mm 2mm;border:0.5px solid #ccc">${p.sampleDate}</td>
+  </tr>
+  <tr>
+    <td style="font-weight:700;color:#1A3A6B;padding:1.2mm 2mm;border:0.5px solid #ccc;background:#f0f5fc">Location</td>
+    <td style="padding:1.2mm 2mm;border:0.5px solid #ccc">${p.location}</td>
+    <td style="font-weight:700;color:#1A3A6B;padding:1.2mm 2mm;border:0.5px solid #ccc;background:#f0f5fc">Test Date</td>
+    <td style="padding:1.2mm 2mm;border:0.5px solid #ccc">${p.testDate}</td>
+  </tr>
+  <tr>
+    <td style="font-weight:700;color:#1A3A6B;padding:1.2mm 2mm;border:0.5px solid #ccc;background:#f0f5fc">Technician</td>
+    <td style="padding:1.2mm 2mm;border:0.5px solid #ccc">${p.tech}</td>
+    <td style="font-weight:700;color:#1A3A6B;padding:1.2mm 2mm;border:0.5px solid #ccc;background:#f0f5fc">Environment</td>
+    <td style="padding:1.2mm 2mm;border:0.5px solid #ccc">${p.env}</td>
+  </tr>
+</table>
+
+<!-- ══ TEST PARAMETERS STRIP ══ -->
+<div style="background:#f5f8ff;border:0.5px solid #c8d8ee;border-radius:3px;padding:2mm 3mm;margin-bottom:4mm">
+  <table style="width:100%;border-collapse:collapse;font-size:7pt">
+    <tr>
+      <td style="font-weight:700;color:#1F6B3A;padding:0.8mm 2mm;border-right:0.5px solid #d0ddf5;white-space:nowrap">Method</td>
+      <td style="padding:0.8mm 2mm;border-right:0.5px solid #d0ddf5">${p.method}</td>
+      <td style="font-weight:700;color:#1F6B3A;padding:0.8mm 2mm;border-right:0.5px solid #d0ddf5;white-space:nowrap">Sep.1</td>
+      <td style="padding:0.8mm 2mm;border-right:0.5px solid #d0ddf5">${sep1Str}</td>
+      <td style="${sep2RowV2};font-weight:700;color:#1F6B3A;padding:0.8mm 2mm;border-right:0.5px solid #d0ddf5;white-space:nowrap">Sep.2</td>
+      <td style="${sep2RowV2};padding:0.8mm 2mm;border-right:0.5px solid #d0ddf5">${sep2Str}</td>
+      <td style="font-weight:700;color:#1A3A6B;padding:0.8mm 2mm;border-right:0.5px solid #d0ddf5;white-space:nowrap">S,Md</td>
+      <td style="padding:0.8mm 2mm;font-weight:700;border-right:0.5px solid #d0ddf5">${smdStr}</td>
+      <td style="font-weight:700;color:#5B2D8E;padding:0.8mm 2mm;border-right:0.5px solid #d0ddf5;white-space:nowrap">1st CSCF</td>
+      <td style="padding:0.8mm 2mm;font-weight:700;color:#5B2D8E;${mode==='double'?'border-right:0.5px solid #d0ddf5':''}">${cscf1Str}</td>
+      ${mode==='double'?`<td style="font-weight:700;color:#5B2D8E;padding:0.8mm 2mm;border-right:0.5px solid #d0ddf5;white-space:nowrap">2nd CSCF</td><td style="padding:0.8mm 2mm;font-weight:700;color:#5B2D8E">${cscf2Str}</td>`:''}
+    </tr>
+  </table>
+</div>
+
+<!-- ══ GRADATION CHART — FULL WIDTH ══ -->
+<div style="background:#1A3A6B;color:#fff;font-size:7pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:1mm;letter-spacing:.8px">▌ GRAIN SIZE DISTRIBUTION CURVE</div>
+<div style="border:0.5px solid #c0cfe0;border-radius:2px;overflow:hidden;background:#fafafe;margin-bottom:4mm">
+  <div id="irm_chartDiv" style="width:100%;height:80mm"></div>
+</div>
+
+<!-- ══ DATA SECTION: SIEVE TABLE LEFT + RESULTS RIGHT ══ -->
+<div style="display:flex;gap:4mm;margin-bottom:4mm;align-items:flex-start">
+
+  <!-- LEFT 45%: Sieve Analysis Table -->
+  <div style="flex:1.1;min-width:0">
+    <div style="background:#1A3A6B;color:#fff;font-size:7pt;font-weight:700;padding:1.5mm 3mm;margin-bottom:0;letter-spacing:.8px">▌ SIEVE ANALYSIS DATA TABLE</div>
+    <table style="width:100%;border-collapse:collapse;font-size:7pt">
+      <thead>
+        <tr style="background:#d8e8f5">
+          <th style="border:0.5px solid #aac;padding:1.2mm 1.5mm;text-align:center;font-weight:700;color:#1A3A6B">Sieve</th>
+          <th style="border:0.5px solid #aac;padding:1.2mm 1.5mm;text-align:center;font-weight:700;color:#1A3A6B">mm</th>
+          <th style="border:0.5px solid #aac;padding:1.2mm 1.5mm;text-align:center;font-weight:700;color:#1A3A6B">CMR (g)</th>
+          <th style="border:0.5px solid #aac;padding:1.2mm 1.5mm;text-align:center;font-weight:700;color:#1A3A6B">% Passing</th>
+        </tr>
+      </thead>
+      <tbody>${sieveRowsHTML}</tbody>
+    </table>
+  </div>
+
+  <!-- RIGHT 55%: Results Panel -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3mm">
+
+    <!-- Classification -->
+    <div>
+      <div style="background:#5B2D8E;color:#fff;font-size:7pt;font-weight:700;padding:1.5mm 3mm;letter-spacing:.8px">▌ SOIL CLASSIFICATION</div>
+      <div style="border:0.5px solid #d0c0f0;border-top:none">${classHTMLv2}</div>
+    </div>
+
+    <!-- Gradation Coefficients -->
+    <div>
+      <div style="background:#1F6B3A;color:#fff;font-size:7pt;font-weight:700;padding:1.5mm 3mm;letter-spacing:.8px">▌ GRADATION COEFFICIENTS</div>
+      <table style="width:100%;border-collapse:collapse;font-size:7pt">
+        <tr style="background:#e8f5f0">
+          <th style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;color:#1F6B3A">D₁₀ (mm)</th>
+          <th style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;color:#1F6B3A">D₃₀ (mm)</th>
+          <th style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;color:#1F6B3A">D₆₀ (mm)</th>
+          <th style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;color:#8B4500">Cᵤ</th>
+          <th style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;color:#8B4500">Cc</th>
+        </tr>
+        <tr style="background:#f6fcf8">
+          <td style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;font-weight:700">${d10v2}</td>
+          <td style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;font-weight:700">${d30v2}</td>
+          <td style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;font-weight:700">${d60v2}</td>
+          <td style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;font-weight:700">${cuv2}</td>
+          <td style="border:0.5px solid #bbd;padding:1.2mm 1.5mm;text-align:center;font-weight:700">${ccv2}</td>
+        </tr>
+        <tr style="background:#fffdf0">
+          <td colspan="5" style="border:0.5px solid #bbd;padding:1.5mm 2mm;text-align:center;font-weight:700;font-size:7pt;color:${gradColorV2}">${chkv2.replace(/[✅❌⚠️]/g,'').trim()||'—'}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Particle Size Fractions -->
+    <div>
+      <div style="background:#8B4500;color:#fff;font-size:7pt;font-weight:700;padding:1.5mm 3mm;letter-spacing:.8px">▌ PARTICLE SIZE FRACTIONS</div>
+      <table style="width:100%;border-collapse:collapse;font-size:7pt">
+        <tr>
+          <td style="border:0.5px solid #ccc;padding:2.5mm;text-align:center">
+            <div style="font-size:6.5pt;color:#888;margin-bottom:1.5mm">% Gravel (&gt;4.75mm)</div>
+            <div style="font-size:15pt;font-weight:900;color:#1A3A6B">${_fGravel2}</div>
+          </td>
+          <td style="border:0.5px solid #ccc;padding:2.5mm;text-align:center">
+            <div style="font-size:6.5pt;color:#888;margin-bottom:1.5mm">% Sand (4.75–0.075mm)</div>
+            <div style="font-size:15pt;font-weight:900;color:#1F6B3A">${_fSand2}</div>
+          </td>
+          <td style="border:0.5px solid #ccc;padding:2.5mm;text-align:center">
+            <div style="font-size:6.5pt;color:#888;margin-bottom:1.5mm">% Fines (&lt;0.075mm)</div>
+            <div style="font-size:15pt;font-weight:900;color:#8B4500">${_fFines2}</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+  </div><!-- end right panel -->
+</div>
+
+<!-- ══ AUTHORIZATION FOOTER ══ -->
+<div style="border-top:2px solid #1A3A6B;margin-top:2mm;padding-top:2mm">
+  <div style="background:#333;color:#fff;font-size:7pt;font-weight:700;padding:1mm 3mm;margin-bottom:2mm;letter-spacing:.8px;display:inline-block">▌ AUTHORIZATION</div>
+  <table style="width:100%;border-collapse:collapse;font-size:7.5pt">
+    <tr>
+      <td style="width:33%;border:0.5px solid #bbb;padding:2.5mm 3mm;vertical-align:top">
+        <div style="font-weight:700;color:#1A3A6B;margin-bottom:3mm;text-align:center;font-size:8pt;border-bottom:0.5px solid #c0d0e8;padding-bottom:1.5mm">Quality Manager</div>
+        <div style="font-size:7pt;color:#444;margin-top:4mm">Name: <span style="border-bottom:0.5px solid #888;display:inline-block;width:30mm">&nbsp;</span></div>
+        <div style="font-size:7pt;color:#444;margin-top:4mm">Signature: <span style="border-bottom:0.5px solid #888;display:inline-block;width:24mm">&nbsp;</span></div>
+        <div style="font-size:7pt;color:#444;margin-top:4mm">Date: <span style="border-bottom:0.5px solid #888;display:inline-block;width:30mm">&nbsp;</span></div>
+      </td>
+      <td style="width:33%;border:0.5px solid #bbb;padding:2.5mm 3mm;vertical-align:top">
+        <div style="font-weight:700;color:#1F6B3A;margin-bottom:3mm;text-align:center;font-size:8pt;border-bottom:0.5px solid #a0d0b0;padding-bottom:1.5mm">Technical Manager</div>
+        <div style="font-size:7pt;color:#444;margin-top:4mm">Name: <span style="border-bottom:0.5px solid #888;display:inline-block;width:30mm">&nbsp;</span></div>
+        <div style="font-size:7pt;color:#444;margin-top:4mm">Signature: <span style="border-bottom:0.5px solid #888;display:inline-block;width:24mm">&nbsp;</span></div>
+        <div style="font-size:7pt;color:#444;margin-top:4mm">Date: <span style="border-bottom:0.5px solid #888;display:inline-block;width:30mm">&nbsp;</span></div>
+      </td>
+      <td style="width:33%;border:0.5px solid #bbb;padding:2.5mm 3mm;vertical-align:top">
+        <div style="font-weight:700;color:#5B2D8E;margin-bottom:3mm;text-align:center;font-size:8pt;border-bottom:0.5px solid #d0c0f0;padding-bottom:1.5mm">Independent Reviewer<br><span style="font-weight:400;font-size:6.5pt;color:#888">(ISO 17025)</span></div>
+        <div style="font-size:7pt;color:#444;margin-top:4mm">Name: <span style="border-bottom:0.5px solid #888;display:inline-block;width:30mm">&nbsp;</span></div>
+        <div style="font-size:7pt;color:#444;margin-top:4mm">Signature: <span style="border-bottom:0.5px solid #888;display:inline-block;width:24mm">&nbsp;</span></div>
+        <div style="font-size:7pt;color:#444;margin-top:4mm">Date: <span style="border-bottom:0.5px solid #888;display:inline-block;width:30mm">&nbsp;</span></div>
+      </td>
+    </tr>
+  </table>
+  <div style="margin-top:2mm;font-size:6.5pt;color:#aaa;text-align:center">
+    Generated by ASTM D6913-17 Composite Sieving Calculator — ${sieveTypeStr} — ${today2}
+  </div>
+</div>
+
+</div><!-- end direction:ltr -->
+`;
 }
 
 function printInlineReport(){
