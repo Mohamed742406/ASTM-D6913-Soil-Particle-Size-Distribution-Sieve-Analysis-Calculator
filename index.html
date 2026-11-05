@@ -1138,6 +1138,14 @@ body.dark-mode .fmt-btn.selected{background:#2a1a4a;border-color:#7b3db5;color:#
             <label>PI (%) — تلقائي</label>
             <div id="ss_pi_display" style="padding:6px;border:1.5px solid #1F6B3A;border-radius:4px;background:#e8f5e9;font-weight:900;font-size:15px;color:#1F6B3A;text-align:center;min-height:34px">—</div>
           </div>
+          <div class="param-box input-blue">
+            <label>اللدونة / Plasticity</label>
+            <select id="ss_plasticityFlag" onchange="ss_classify()" style="width:100%;padding:7px;border:1.5px solid #bbb;border-radius:4px;background:#fff">
+              <option value="auto">تلقائي (Auto)</option>
+              <option value="yes">نعم — Plastic</option>
+              <option value="no">لا — Non Plastic (NP)</option>
+            </select>
+          </div>
         </div>
         <!-- Organic / Peat section -->
         <div style="margin-top:10px;background:#fff9c4;border-radius:6px;padding:8px 12px">
@@ -1669,45 +1677,55 @@ function classifyAASHTO(getFn, ll, pl, isNP){
   if(isNaN(p200)) return {symbol:'—',name:'',gi:'—',detail:'Run calculation first.',use:''};
   const PI=isNP?0:(!isNaN(ll)&&!isNaN(pl)&&pl<ll?ll-pl:NaN);
   const piOk=!isNaN(PI); const llOk=!isNaN(ll);
-  /* Group Index */
-  function calcGI(f,l,pi){
+  /* Group Index (AASHTO M 145): A-1, A-3, A-2-4, A-2-5 => 0 ; A-2-6/A-2-7 => partial (PI) term only */
+  function calcGI(f,l,pi,grp){
     if(isNaN(pi)||isNaN(l)) return 0;
-    const gi=(f-35)*(0.2+0.005*(l-40))+0.01*(f-15)*(pi-10);
+    if(grp==='A-2-4'||grp==='A-2-5') return 0;
+    let gi;
+    if(grp==='A-2-6'||grp==='A-2-7') gi=0.01*(f-15)*(pi-10);
+    else gi=(f-35)*(0.2+0.005*(l-40))+0.01*(f-15)*(pi-10);
     return Math.max(0,Math.round(gi));
   }
   const aashtoUse={
     'A-1-a':'Coarse Granular Material (Stone, Gravel & Sand) — Excellent subgrade',
     'A-1-b':'Coarse Granular Material (Gravel & Sand) — Excellent subgrade',
-    'A-3':'Fine Sand (non-plastic) — Good to Excellent subgrade',
-    'A-2-4':'Granular Material with Silty Fines — Good to Excellent',
-    'A-2-5':'Granular Material with Silty Fines (high LL) — Good to Excellent',
-    'A-2-6':'Granular Material with Clayey Fines — Fair to Good',
-    'A-2-7':'Granular Material with High-Plasticity Fines — Fair to Poor',
-    'A-4':'Silty Soil — Poor to Fair subgrade','A-5':'Elastic Silty Soil — Poor subgrade',
-    'A-6':'Plastic Clay Soil — Poor subgrade',
-    'A-7-5':'Elastic/Plastic Clay — Very Poor subgrade',
-    'A-7-6':'Swelling Clay — Very Poor subgrade'
+    'A-3':'Fine Sand (non-plastic) — Excellent to Good subgrade',
+    'A-2-4':'Granular Material with Silty Fines — Excellent to Good',
+    'A-2-5':'Granular Material with Silty Fines (high LL) — Excellent to Good',
+    'A-2-6':'Granular Material with Clayey Fines — Excellent to Good',
+    'A-2-7':'Granular Material with High-Plasticity Fines — Excellent to Good',
+    'A-4':'Silty Soil — Fair to Poor subgrade','A-5':'Elastic Silty Soil — Fair to Poor subgrade',
+    'A-6':'Plastic Clay Soil — Fair to Poor subgrade',
+    'A-7-5':'Elastic/Plastic Clay — Fair to Poor subgrade',
+    'A-7-6':'Swelling Clay — Fair to Poor subgrade'
   };
   const p10v=isNaN(p10)?100:p10, p40v=isNaN(p40)?100:p40;
-  let sym,name,gi=0;
-  if(p200<=15&&p40v<=30&&p10v<=50&&(!piOk||PI<=6)){sym='A-1-a';name='Coarse Granular Soil';}
-  else if(p200<=25&&p40v<=50&&(!piOk||PI<=6)){sym='A-1-b';name='تربة حبيبية';}
-  else if(p200<=10&&isNP){sym='A-3';name='Fine Sand';}
-  else if(p200<=35&&llOk&&piOk&&ll<=40&&PI<=10){sym='A-2-4';name='Granular with Silty Fines';gi=calcGI(p200,ll,PI);}
-  else if(p200<=35&&llOk&&piOk&&ll>40&&PI<=10){sym='A-2-5';name='Granular with Silty Fines';gi=calcGI(p200,ll,PI);}
-  else if(p200<=35&&llOk&&piOk&&ll<=40&&PI>10){sym='A-2-6';name='Granular with Clayey Fines';gi=calcGI(p200,ll,PI);}
-  else if(p200<=35&&llOk&&piOk&&ll>40&&PI>10){sym='A-2-7';name='Granular with Clayey Fines (HP)';gi=calcGI(p200,ll,PI);}
-  else if(!llOk||!piOk){
-    if(p200>35) return {symbol:'A-4/A-7?',name:'LL and PI required',gi:'—',detail:`%Passing No.200=${p200.toFixed(1)}% — Enter LL and PL`,use:''};
-    return {symbol:'A-2?',name:'LL and PI required',gi:'—',detail:`%Passing No.200=${p200.toFixed(1)}%`,use:''};
+  const noAtt=isNaN(ll)&&isNaN(pl)&&!isNP;          /* no Atterberg data entered at all */
+  const L=isNaN(ll)?(isNP?0:NaN):ll;                 /* NP + unknown LL => treated as LL<=40 */
+  const LLok=!isNaN(L);
+  const PIv=piOk?PI:NaN;
+  let sym,name,gi=0,note='';
+  if(p200<=15&&p40v<=30&&p10v<=50&&(!piOk||PI<=6)){sym='A-1-a';name='Stone Fragments, Gravel & Sand';}
+  else if(p200<=25&&p40v<=50&&(!piOk||PI<=6)){sym='A-1-b';name='Gravel & Sand';}
+  else if(p200<=10&&p40v>50&&(isNP||noAtt)){
+    sym='A-3';name='Fine Sand';
+    if(noAtt) note=' — NP assumed (enter LL/PL to confirm)';
   }
-  else if(p200>35&&ll<=40&&PI<=10){sym='A-4';name='تربة طمي';gi=calcGI(p200,ll,PI);}
-  else if(p200>35&&ll>40&&PI<=10){sym='A-5';name='طمي عالي اللدونة';gi=calcGI(p200,ll,PI);}
-  else if(p200>35&&ll<=40&&PI>10){sym='A-6';name='Plastic Clay Soil';gi=calcGI(p200,ll,PI);}
-  else if(p200>35&&ll>40&&PI>LL-30){sym='A-7-6';name='Swelling Clay';gi=calcGI(p200,ll,PI);}
-  else{sym='A-7-5';name='Elastic Clay';gi=calcGI(p200,ll,PI);}
-  const llStr=llOk?`LL=${ll.toFixed(0)}%, `:''; const piStr=piOk?`PI=${PI.toFixed(0)}%, `:'NP, ';
-  return {symbol:sym,name,gi,detail:`${llStr}${piStr}%Passing No.200=${p200.toFixed(1)}%`,use:aashtoUse[sym]||''};
+  else if(p200<=35&&LLok&&piOk&&L<=40&&PI<=10){sym='A-2-4';name='Silty Gravel & Sand';}
+  else if(p200<=35&&LLok&&piOk&&L>40&&PI<=10){sym='A-2-5';name='Silty Gravel & Sand (high LL)';}
+  else if(p200<=35&&LLok&&piOk&&L<=40&&PI>10){sym='A-2-6';name='Clayey Gravel & Sand';gi=calcGI(p200,L,PI,'A-2-6');}
+  else if(p200<=35&&LLok&&piOk&&L>40&&PI>10){sym='A-2-7';name='Clayey Gravel & Sand (high LL)';gi=calcGI(p200,L,PI,'A-2-7');}
+  else if(!LLok||!piOk){
+    if(p200>35) return {symbol:'A-4/A-7?',name:'LL and PI required',gi:'—',detail:`%Passing No.200=${p200.toFixed(1)}% — Enter LL and PL`,use:''};
+    return {symbol:'A-2?',name:'LL and PI required',gi:'—',detail:`%Passing No.200=${p200.toFixed(1)}% — Enter LL/PL or choose NP`,use:''};
+  }
+  else if(p200>35&&L<=40&&PI<=10){sym='A-4';name='Silty Soil';gi=calcGI(p200,L,PI,sym);}
+  else if(p200>35&&L>40&&PI<=10){sym='A-5';name='Elastic Silty Soil';gi=calcGI(p200,L,PI,sym);}
+  else if(p200>35&&L<=40&&PI>10){sym='A-6';name='Plastic Clay Soil';gi=calcGI(p200,L,PI,sym);}
+  else if(p200>35&&L>40&&PI>L-30){sym='A-7-6';name='Swelling Clay';gi=calcGI(p200,L,PI,sym);}
+  else{sym='A-7-5';name='Elastic Clay';gi=calcGI(p200,L,PI,sym);}
+  const llStr=!isNaN(ll)?`LL=${ll.toFixed(0)}%, `:''; const piStr=piOk&&!isNP?`PI=${PI.toFixed(0)}%, `:(isNP?'NP, ':'');
+  return {symbol:sym,name:name+note,gi,detail:`${llStr}${piStr}%Passing No.200=${p200.toFixed(1)}%`,use:aashtoUse[sym]||''};
 }
 
 /* ═══ Render classification table ═══ */
@@ -1792,19 +1810,19 @@ function classifySoil(){
     const organic=!isNaN(odRatio)&&odRatio<0.75;
 
     let symbol='',name='';
-    const borderline=(ll>=12&&ll<=25&&pi>=4&&pi<=7);
+    const borderline=(ll<50&&pi>=4&&pi<=7&&pi>=aLine);   /* hatched CL-ML zone, ASTM D2487 Fig.4 */
     if(borderline){symbol='CL-ML';name='Silty clay (Borderline)';}
     else if(ll<50){
-      const base=pi>aLine?'CL':'ML';
+      const base=(pi>7&&pi>=aLine)?'CL':'ML';
       if(organic) symbol='OL';
       else symbol=base;
-      name=organic?'OL — Organic Clay/Silt (Low Plasticity)':(pi>aLine?'CL — Lean Clay':'ML — Silt');
+      name=organic?'OL — Organic Clay/Silt (Low Plasticity)':((pi>7&&pi>=aLine)?'CL — Lean Clay':'ML — Silt');
     }
     else {
-      const base=pi>aLine?'CH':'MH';
+      const base=pi>=aLine?'CH':'MH';
       if(organic) symbol='OH';
       else symbol=base;
-      name=organic?'OH — Organic Clay/Silt (High Plasticity)':(pi>aLine?'CH — Fat Clay':'MH — Elastic Silt');
+      name=organic?'OH — Organic Clay/Silt (High Plasticity)':(pi>=aLine?'CH — Fat Clay':'MH — Elastic Silt');
     }
     const orgDetail=!isNaN(odRatio)?` — LL(OD)/LL(ND)=${odRatio.toFixed(2)}${organic?' < 0.75 → Organic':' ≥ 0.75 → Inorganic'}`:'';
     return {symbol,name,detail:`LL=${ll.toFixed(1)}%, PL=${pl.toFixed(1)}%, PI=${pi.toFixed(1)}%, A-Line=${aLine.toFixed(1)}%${orgDetail} — Fine-grained (ASTM D2487).`};
@@ -1813,14 +1831,14 @@ function classifySoil(){
   /* ── Coarse-grained <50% passes No.200 ── */
   const fines=p200;
   /* G if more than half of coarse fraction retained on No.4 */
-  const groupType=(!isNaN(p4)&&(p4-fines)<(50-fines))?'G':'S';
+  const groupType=(!isNaN(p4)&&(p4-fines)<((100-fines)/2))?'G':'S';
 
   let finesSymbol='M',clayey=false;
   if(isNP){
     finesSymbol='M'; // Non-plastic → M-type per ASTM D2487
   } else if(!isNaN(ll)&&!isNaN(pl)&&pl<ll){
     const pi=ll-pl, aLine=0.73*(ll-20);
-    clayey=pi>aLine; finesSymbol=clayey?'C':'M';
+    clayey=(pi>7&&pi>=aLine); finesSymbol=clayey?'C':'M';
   }
 
   const cuAvail=!isNaN(_Cu)&&isFinite(_Cu);
@@ -2310,15 +2328,28 @@ function resetForm(){
   _resetReportPanel();
 }
 
+/* ═══ Session save — ask for a file name ═══ */
+function _askSessionName(prefix){
+  const g=id=>(document.getElementById(id)?.value||'').trim();
+  const n=new Date(), pad=x=>String(x).padStart(2,'0');
+  const stamp=`${n.getFullYear()}${pad(n.getMonth()+1)}${pad(n.getDate())}`;
+  const def=([g('sampleNo'),g('projectName')].filter(Boolean).join(' - ')||prefix)+' '+stamp;
+  const nm=window.prompt('اكتب اسم الملف المحفوظ / Enter a file name:',def);
+  if(nm===null) return null;                         /* user cancelled */
+  const clean=(nm.trim()||def).replace(/[\\\/:*?"<>|]+/g,'_').replace(/\.json$/i,'');
+  return {name:clean,file:clean+'.json'};
+}
+
 /* ═══ Session save/load ═══ */
 function saveSession(){
+  const _nm=_askSessionName('D6913'); if(!_nm) return;
   const inputs={};
   document.querySelectorAll('input[type=number],input[type=text],input[type=date],select').forEach(inp=>{if(inp.id)inputs[inp.id]=inp.value;});
-  const session={version:'D6913-v3',savedAt:new Date().toISOString(),label:'ASTM D6913 Double Separation',inputs};
+  const session={version:'D6913-v3',savedAt:new Date().toISOString(),name:_nm.name,label:'ASTM D6913 Double Separation',inputs};
   const blob=new Blob([JSON.stringify(session,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),a=document.createElement('a'),n=new Date();
-  a.href=url;a.download=`D6913_Session_${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}.json`;
-  a.click();URL.revokeObjectURL(url);showStatus('✅ Session saved successfully!',true);
+  a.href=url;a.download=_nm.file;
+  a.click();URL.revokeObjectURL(url);showStatus('✅ Session saved: '+_nm.file,true);
 }
 function loadSession(event){
   const file=event.target.files[0];if(!file)return;
@@ -2338,16 +2369,17 @@ function loadSession(event){
 
 /* ── Single Separation — Save / Load ── */
 function saveSession_s1(){
+  const _nm=_askSessionName('SingleSep'); if(!_nm) return;
   const inputs={};
   document.querySelectorAll('input[type=number],input[type=text],input[type=date],select').forEach(inp=>{if(inp.id)inputs[inp.id]=inp.value;});
-  const session={version:'D6913-v4',savedAt:new Date().toISOString(),label:'Single Separation',mode:'single',inputs};
+  const session={version:'D6913-v4',savedAt:new Date().toISOString(),name:_nm.name,label:'Single Separation',mode:'single',inputs};
   const blob=new Blob([JSON.stringify(session,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),a=document.createElement('a'),n=new Date();
   a.href=url;
-  a.download=`SingleSep_Session_${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}.json`;
+  a.download=_nm.file;
   a.click();URL.revokeObjectURL(url);
   const st=document.getElementById('s1_status');
-  if(st){st.textContent='✅ تم حفظ البيانات بنجاح!';st.style.display='block';st.style.background='#e8f5e9';st.style.color='#1F6B3A';}
+  if(st){st.textContent='✅ تم الحفظ باسم: '+_nm.file;st.style.display='block';st.style.background='#e8f5e9';st.style.color='#1F6B3A';}
 }
 function loadSession_s1(event){
   const file=event.target.files[0];if(!file)return;
@@ -2370,16 +2402,17 @@ function loadSession_s1(event){
 
 /* ── Simple Sieve — Save / Load ── */
 function saveSession_ss(){
+  const _nm=_askSessionName('SimpleSieve'); if(!_nm) return;
   const inputs={};
   document.querySelectorAll('input[type=number],input[type=text],input[type=date],select').forEach(inp=>{if(inp.id)inputs[inp.id]=inp.value;});
-  const session={version:'D6913-v4',savedAt:new Date().toISOString(),label:'Simple Sieve Analysis',mode:'simple',inputs};
+  const session={version:'D6913-v4',savedAt:new Date().toISOString(),name:_nm.name,label:'Simple Sieve Analysis',mode:'simple',inputs};
   const blob=new Blob([JSON.stringify(session,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob),a=document.createElement('a'),n=new Date();
   a.href=url;
-  a.download=`SimpleSieve_Session_${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}.json`;
+  a.download=_nm.file;
   a.click();URL.revokeObjectURL(url);
   const st=document.getElementById('ss_status');
-  if(st){st.textContent='✅ تم حفظ البيانات بنجاح!';st.style.display='block';st.style.background='#e8f5e9';st.style.color='#1F6B3A';}
+  if(st){st.textContent='✅ تم الحفظ باسم: '+_nm.file;st.style.display='block';st.style.background='#e8f5e9';st.style.color='#1F6B3A';}
 }
 function loadSession_ss(event){
   const file=event.target.files[0];if(!file)return;
@@ -3097,7 +3130,7 @@ function s1_classifySoil(){
     if(isNaN(ll)||isNaN(pl)) return {symbol:'—',name:'Enter LL and PL',detail:'LL and PL required for fine-grained soil.'};
     if(pl>=ll) return {symbol:'⚠️',name:'Inconsistent data',detail:'PL must be less than LL.'};
     const pi=ll-pl, aLine=0.73*(ll-20);
-    const bl=(ll>=12&&ll<=25&&pi>=4&&pi<=7);
+    const bl=(ll<50&&pi>=4&&pi<=7&&pi>=aLine);
     let sym='',nm='';
 
     /* Organic check */
@@ -3109,17 +3142,17 @@ function s1_classifySoil(){
     if(bl){sym='CL-ML';nm='Silty clay (Borderline)';}
     else if(ll<50){
       if(s1organic){sym='OL';nm='OL — Organic Clay/Silt (Low Plasticity)';}
-      else{sym=pi>aLine?'CL':'ML';nm=pi>aLine?'CL — Lean Clay':'ML — Silt';}
+      else{const _cl=(pi>7&&pi>=aLine);sym=_cl?'CL':'ML';nm=_cl?'CL — Lean Clay':'ML — Silt';}
     }
     else{
       if(s1organic){sym='OH';nm='OH — Organic Clay/Silt (High Plasticity)';}
-      else{sym=pi>aLine?'CH':'MH';nm=pi>aLine?'CH — Fat Clay':'MH — Elastic Silt';}
+      else{sym=pi>=aLine?'CH':'MH';nm=pi>=aLine?'CH — Fat Clay':'MH — Elastic Silt';}
     }
     const s1orgD=!isNaN(s1odRatio)?` — LL(OD)/LL(ND)=${s1odRatio.toFixed(2)}${s1organic?' < 0.75 → Organic':' ≥ 0.75 → Inorganic'}`:'';
     return {symbol:sym,name:nm,detail:`LL=${ll.toFixed(1)}%, PI=${pi.toFixed(1)}% , A-line=${aLine.toFixed(1)}%${s1orgD}`};
   }
   const fines=p200;
-  const gt=(!isNaN(p4)&&(p4-fines)<(50-fines))?'G':'S';
+  const gt=(!isNaN(p4)&&(p4-fines)<((100-fines)/2))?'G':'S';
   let fs='M';
   if(isNP){
     fs='M'; // Non-plastic → M-type per ASTM D2487
@@ -3491,29 +3524,32 @@ function ss_calculate(){
      - بالغسيل:  washLoss = totalDry − washedMass  (المادة التي مرت No.200 أثناء الغسيل)
      - بدون غسيل: totalDry − cumRet_at_200          (الباقي بعد طرح المحجوز التراكمي) */
   const retOnSieves = cumRet;   /* آخر قيمة = cumRet عند No.200 */
-  let finerThan200;
+  /* المار No.200 الكلي = الكلي − مجموع المحجوز على المناخل (نفس أساس % المار والتصنيف) */
+  const finerThan200 = Math.max(0, totalDry - retOnSieves);
+  const pct200 = (finerThan200 / totalDry * 100).toFixed(2);
+  ss_set('ss_pan_mass', finerThan200.toFixed(2) + ' g  (' + pct200 + '%)');
   if(hasWash){
-    finerThan200 = Math.max(0, totalDry - washedVal);   /* = washLoss */
-    const pct200 = (finerThan200 / totalDry * 100).toFixed(1);
-    ss_set('ss_pan_mass', finerThan200.toFixed(1) + ' g  (' + pct200 + '%)');
-    ss_set('ss_pan_note', 'محسوب من فاقد الغسيل');
+    const panDry = washedVal - retOnSieves;   /* مادة مرت No.200 أثناء التنخيل الجاف (Pan) */
+    ss_set('ss_pan_note', 'فاقد الغسيل ' + washLoss.toFixed(2) + ' g + Pan التنخيل ' + panDry.toFixed(2) + ' g');
   } else {
-    finerThan200 = Math.max(0, totalDry - retOnSieves);
-    const pct200 = (finerThan200 / totalDry * 100).toFixed(1);
-    ss_set('ss_pan_mass', finerThan200.toFixed(1) + ' g  (' + pct200 + '%)');
     ss_set('ss_pan_note', 'محسوب = الكلي − مجموع المحجوز');
   }
 
-  /* Mass balance check — cumRet عند No.200 يجب ≈ washedMass */
-  const diff = retOnSieves - (hasWash ? washedVal : totalDry);
+  /* Mass balance (ASTM C136): المحجوز على المناخل ≤ وزن العينة المغسولة؛ الفرق = Pan التنخيل الجاف */
+  const diff = retOnSieves - (hasWash ? washedVal : totalDry);   /* موجب = خطأ؛ سالب = Pan */
   const checkBar = document.getElementById('ss_check_bar');
   const checkTxt = document.getElementById('ss_check_txt');
   if(hasWash && checkBar && checkTxt){
     checkBar.style.display='block';
-    const pct = Math.abs(diff/washedVal*100);
-    checkBar.style.background = pct<0.3?'#e8f5e9':pct<1?'#fff3e0':'#ffebee';
-    checkTxt.textContent = (pct<0.3?'✅ ':pct<1?'⚠️ ':'❌ ')
-      +'مجموع المحجوز vs الوزن بعد الغسيل: '+(diff>=0?'+':'')+diff.toFixed(2)+' g  ('+pct.toFixed(2)+'%)';
+    if(diff > 0.001){
+      const pctE = diff/washedVal*100;
+      checkBar.style.background = pctE<0.3?'#fff3e0':'#ffebee';
+      checkTxt.textContent = (pctE<0.3?'⚠️ ':'❌ ')+'المحجوز على المناخل أكبر من الوزن بعد الغسيل بمقدار '+diff.toFixed(2)+' g ('+pctE.toFixed(2)+'%) — راجع الأوزان';
+    } else {
+      const panG = -diff, pctP = panG/totalDry*100;
+      checkBar.style.background = pctP<1?'#e8f5e9':pctP<2?'#fff3e0':'#ffebee';
+      checkTxt.textContent = (pctP<1?'✅ ':pctP<2?'⚠️ ':'❌ ')+'Pan (مادة مرت No.200 أثناء التنخيل الجاف) = '+panG.toFixed(2)+' g ('+pctP.toFixed(2)+'% من الكلي) — تُحسب ضمن المار No.200';
+    }
   } else if(checkBar){
     checkBar.style.display='none';
   }
@@ -3560,6 +3596,7 @@ function ss_classify(){
   const pl = parseFloat(document.getElementById('ss_pl')?.value);
   const box = document.getElementById('ss_classBox');
   if(!box||isNaN(p0075)){return;}
+  const ssIsNP = (document.getElementById('ss_plasticityFlag')?.value||'auto')==='no';
 
   /* OD ratio display */
   const ssllODv=parseFloat(document.getElementById('ss_ll_od')?.value);
@@ -3587,14 +3624,30 @@ function ss_classify(){
     return;
   }
 
-  const isGravel = !isNaN(p475) && p475<50;
+  const isGravel = !isNaN(p475) && (p475-p0075)<((100-p0075)/2);   /* gravel > 50% of coarse fraction */
   const cuOkG = !isNaN(ssCu)&&ssCu>=4&&!isNaN(ssCc)&&ssCc>=1&&ssCc<=3;
   const cuOkS = !isNaN(ssCu)&&ssCu>=6&&!isNaN(ssCc)&&ssCc>=1&&ssCc<=3;
   const cuOk  = isGravel?cuOkG:cuOkS;
 
   let sym='—', name='—';
   const cuCcAvail = !isNaN(ssCu) && !isNaN(ssCc);
-  if(p0075<5){
+  /* fines type: NP / unknown => M ; PI>7 and above A-line => C */
+  let fSym='M', fNote='';
+  if(!ssIsNP && !isNaN(ll) && !isNaN(pl) && pl<ll){
+    const _pi=ll-pl; fSym=(_pi>7 && _pi>=0.73*(ll-20))?'C':'M';
+  } else if(!ssIsNP && (isNaN(ll)||isNaN(pl))){ fNote=' (⚠️ M assumed — enter LL/PL)'; }
+  if(p0075>=50){
+    if(ssIsNP){ sym = (!isNaN(ll)&&ll>=50)?'MH':'ML'; }
+    else if(isNaN(ll)||isNaN(pl)||pl>=ll){ sym='—'; }
+    else {
+      const _pi=ll-pl, _a=0.73*(ll-20);
+      const org=(()=>{const o=parseFloat(document.getElementById('ss_ll_od')?.value),n=parseFloat(document.getElementById('ss_ll_nd')?.value);return !isNaN(o)&&!isNaN(n)&&n>0&&o/n<0.75;})();
+      if(ll<50&&_pi>=4&&_pi<=7&&_pi>=_a) sym='CL-ML';
+      else if(ll<50) sym=org?'OL':((_pi>7&&_pi>=_a)?'CL':'ML');
+      else sym=org?'OH':(_pi>=_a?'CH':'MH');
+    }
+    name = sym==='—' ? 'Enter LL and PL (fine-grained)' : sym;
+  } else if(p0075<5){
     if(!cuCcAvail){
       sym = isGravel ? 'GW/GP' : 'SW/SP';
       name= (isGravel?'Gravel':'Sand')+' — ⚠️ Cu & Cc required (D₁₀, D₃₀, D₆₀ needed)';
@@ -3607,12 +3660,11 @@ function ss_classify(){
       sym = isGravel ? 'GW-GM/GP-GM' : 'SW-SM/SP-SM';
       name= 'Dual Symbol — ⚠️ Cu & Cc required (D₁₀, D₃₀, D₆₀ needed)';
     } else {
-      if(isGravel){ sym=cuOk?'GW-GM':'GP-GM'; name=sym+' — Gravel with Fines'; }
-      else         { sym=cuOk?'SW-SM':'SP-SM'; name=sym+' — Sand with Fines';   }
+      if(isGravel){ sym=(cuOk?'GW-G':'GP-G')+fSym; name=sym+' — Gravel with Fines'+fNote; }
+      else         { sym=(cuOk?'SW-S':'SP-S')+fSym; name=sym+' — Sand with Fines'+fNote;   }
     }
   } else {
-    if(isGravel) sym=!isNaN(ll)&&!isNaN(pl)&&(ll-pl)>7?'GC':'GM';
-    else         sym=!isNaN(ll)&&!isNaN(pl)&&(ll-pl)>7?'SC':'SM';
+    sym=(isGravel?'G':'S')+fSym;
     name=sym+({GC:' — Clayey Gravel',GM:' — Silty Gravel',SC:' — Clayey Sand',SM:' — Silty Sand'}[sym]||'');
   }
 
@@ -3624,8 +3676,8 @@ function ss_classify(){
   }
 
   /* AASHTO */
-  const aashto = classifyAASHTO(ss_getPass, ll, pl, false);
-  const col    = sym.startsWith('G')?'#1F6B3A':'#1A3A6B';
+  const aashto = classifyAASHTO(ss_getPass, ll, pl, ssIsNP);
+  const col    = sym.startsWith('G')?'#1F6B3A':(/^(C|M|O)/.test(sym)?'#5B2D8E':'#1A3A6B');
   box.innerHTML=`
     <div style="margin-bottom:8px">
       <span style="display:inline-block;background:${col};color:#fff;font-size:20px;font-weight:900;padding:6px 20px;border-radius:8px">${sym}</span>
@@ -3820,6 +3872,7 @@ function ss_reset(){
     const inp=document.getElementById(s.id);if(inp)inp.value='0';
     [s.pr,s.pp].forEach(id=>ss_set(id,'—'));
   });
+  const _spf=document.getElementById('ss_plasticityFlag'); if(_spf) _spf.value='auto';
   ss_set('ss_pan_mass','—'); ss_set('ss_pan_note','');
   ss_set('ss_d10','—'); ss_set('ss_d30','—'); ss_set('ss_d60','—');
   ss_set('ss_cu','—');  ss_set('ss_cc','—');  ss_set('ss_gradcheck','—');
